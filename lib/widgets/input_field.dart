@@ -5,12 +5,14 @@ class InputField extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
+  final String? prefixText;
 
   const InputField({
     required this.label,
     required this.controller,
     this.keyboardType = TextInputType.text,
     this.validator,
+    this.prefixText,
     super.key,
   });
 
@@ -24,6 +26,7 @@ class InputField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          prefixText: prefixText,
         ),
         validator: validator,
       ),

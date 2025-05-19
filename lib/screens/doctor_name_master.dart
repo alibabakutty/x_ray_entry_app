@@ -16,7 +16,6 @@ class DoctorNameMaster extends StatefulWidget {
 class _DoctorNameMasterState extends State<DoctorNameMaster> {
   final FirebaseService firebaseService = FirebaseService();
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController noController = TextEditingController();
   final TextEditingController doctorNameController = TextEditingController();
 
   bool _isSubmitting = false;
@@ -58,7 +57,6 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
       if (data != null) {
         setState(() {
           _doctorData = data;
-          noController.text = data.no.toString();
           doctorNameController.text = data.doctorName;
         });
       } else {
@@ -82,14 +80,14 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
       setState(() => _isSubmitting = true);
 
       final updatedDoctorData = DoctorNameData(
-        no: int.parse(noController.text.trim()),
+        // no: int.parse(noController.text.trim()),
         doctorName: doctorNameController.text.trim(),
         timestamp: _doctorData?.timestamp ?? Timestamp.now(),
       );
 
       final success = _isEditing
           ? await firebaseService.updateDoctorData(
-              _doctorData!.no, // Pass the original no
+              _doctorData!.doctorName, // Pass the original no
               updatedDoctorData)
           : await firebaseService.addDoctorNameData(updatedDoctorData);
 
@@ -100,14 +98,13 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
           SnackBar(
             content: Text(success
                 ? (_isEditing ? 'Doctor updated!' : 'Doctor added!')
-                : 'Operation failed. ID might be already in use.'),
+                : 'Operation failed. Name might be already in use.'),
           ),
         );
 
         if (success && _isEditing) {
           Navigator.pop(context, true); // Return to previous screen
         } else if (success && !_isEditing) {
-          noController.clear();
           doctorNameController.clear();
         }
       }
@@ -116,7 +113,6 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
 
   @override
   void dispose() {
-    noController.dispose();
     doctorNameController.dispose();
     super.dispose();
   }
@@ -169,9 +165,6 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Doctor ID: ${_doctorData!.no}',
-                      style: const TextStyle(fontSize: 16)),
-                  const SizedBox(height: 8),
                   Text('Doctor Name: ${_doctorData!.doctorName}',
                       style: const TextStyle(fontSize: 16)),
                   const SizedBox(height: 8),
@@ -212,26 +205,6 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
                 ),
               ),
             const SizedBox(height: 30),
-            TextFormField(
-              controller: noController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Doctor ID',
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                hintText: 'Enter doctor ID number',
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a number';
-                }
-                if (int.tryParse(value) == null) {
-                  return 'Enter a valid number';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20),
             TextFormField(
               controller: doctorNameController,
               decoration: InputDecoration(

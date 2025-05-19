@@ -68,7 +68,7 @@ class _UpdateMasterPageState extends State<UpdateMasterPage> {
       setState(() {
         doctorNames = snapshot.docs
             .map((doc) =>
-                (doc.data() as Map<String, dynamic>)['doctorName'] as String)
+                (doc.data() as Map<String, dynamic>)['doctor_name'] as String)
             .toList();
         hasFetchedDoctors = true;
       });
@@ -81,13 +81,14 @@ class _UpdateMasterPageState extends State<UpdateMasterPage> {
 
   Future<void> _fetchPartOfXrayNames() async {
     try {
-      QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('partOfXray').get();
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('part_of_xray_data')
+          .get();
 
       setState(() {
         partOfXrayNames = snapshot.docs
-            .map((doc) =>
-                (doc.data() as Map<String, dynamic>)['partOfXray'] as String)
+            .map((doc) => (doc.data()
+                as Map<String, dynamic>)['part_of_xray_name'] as String)
             .toList();
         hasFetchedPartOfXrayNames = true;
       });
@@ -106,7 +107,7 @@ class _UpdateMasterPageState extends State<UpdateMasterPage> {
       setState(() {
         locationNames = snapshot.docs
             .map((doc) =>
-                (doc.data() as Map<String, dynamic>)['locationName'] as String)
+                (doc.data() as Map<String, dynamic>)['location_name'] as String)
             .toList();
         hasFetchedLocationNames = true;
       });
@@ -202,6 +203,12 @@ class _UpdateMasterPageState extends State<UpdateMasterPage> {
                           ? 'GMD Numbers'
                           : 'Location Names',
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _loadData,
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

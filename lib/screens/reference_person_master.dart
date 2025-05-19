@@ -17,7 +17,6 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
   final FirebaseService firebaseService = FirebaseService();
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController noController = TextEditingController();
   final TextEditingController referencePersonNameController =
       TextEditingController();
   bool _isSubmitting = false;
@@ -60,7 +59,6 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
       if (data != null) {
         setState(() {
           _referencePersonData = data;
-          noController.text = data.no.toString();
           referencePersonNameController.text = data.referencePersonName;
         });
       } else {
@@ -86,14 +84,14 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
       });
 
       final updatedReferencePersonData = ReferencePersonData(
-        no: int.parse(noController.text.trim()),
         referencePersonName: referencePersonNameController.text.trim(),
         timestamp: _referencePersonData?.timestamp ?? Timestamp.now(),
       );
 
       final success = _isEditing
           ? await firebaseService.updateReferencePersonData(
-              _referencePersonData!.no, updatedReferencePersonData)
+              _referencePersonData!.referencePersonName,
+              updatedReferencePersonData)
           : await firebaseService
               .addReferencePersonData(updatedReferencePersonData);
 
@@ -108,13 +106,12 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
                   ? (_isEditing
                       ? 'Reference Person Updated!'
                       : 'Reference Person Submitted!')
-                  : 'Operation failed. ID might be already in use.')),
+                  : 'Operation failed. Name might be already in use.')),
         );
 
         if (success && _isEditing) {
           Navigator.pop(context, true); // Return to previous screen
         } else if (success && !_isEditing) {
-          noController.clear();
           referencePersonNameController.clear();
         }
       }
@@ -123,7 +120,6 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
 
   @override
   void dispose() {
-    noController.dispose();
     referencePersonNameController.dispose();
     super.dispose();
   }
@@ -222,29 +218,6 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
                     color: Colors.blue),
               ),
             const SizedBox(height: 30),
-            // input fields
-            TextFormField(
-              controller: noController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'No.',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.blue),
-                ),
-                hintText: 'Enter doctor number (e.g., 1)',
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a number';
-                }
-                if (int.tryParse(value) == null) {
-                  return 'Please enter a valid number';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20),
             // Input Fields
             TextFormField(
               controller: referencePersonNameController,

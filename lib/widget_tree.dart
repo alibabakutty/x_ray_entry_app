@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:x_ray_entry_app/authentication/auth_provider.dart';
 
 class WidgetTree extends StatefulWidget {
   const WidgetTree({super.key});
@@ -73,6 +75,8 @@ class _WidgetTreeState extends State<WidgetTree> {
                         text: 'Admin Login',
                         icon: Icons.admin_panel_settings,
                         onTap: () {
+                          Provider.of<AuthProvider>(context, listen: false)
+                              .loginAsAdmin();
                           Navigator.pushNamed(context, '/adminLogin');
                         },
                         isPrimary: true,
@@ -114,6 +118,8 @@ class _WidgetTreeState extends State<WidgetTree> {
                         text: 'Continue as Guest',
                         icon: Icons.person_outline,
                         onTap: () {
+                          Provider.of<AuthProvider>(context, listen: false)
+                              .loginAsGuest();
                           Navigator.pushNamed(context, '/gateway');
                         },
                         isPrimary: false,

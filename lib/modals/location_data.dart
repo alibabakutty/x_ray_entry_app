@@ -1,12 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LocationData {
-  late int no;
   final String locationName;
   final Timestamp timestamp;
 
   LocationData({
-    required this.no,
     required this.locationName,
     required this.timestamp,
   });
@@ -14,8 +12,7 @@ class LocationData {
   // convert data from Firestore to a LocationData object
   factory LocationData.fromFirestore(Map<String, dynamic> data) {
     return LocationData(
-      no: data['no'] ?? 0,
-      locationName: data['locationName'] ?? '',
+      locationName: data['location_name'] ?? '',
       timestamp: data['timestamp'] ?? Timestamp.now(),
     );
   }
@@ -23,8 +20,7 @@ class LocationData {
   // convert a LocationData object into a Map object for Firebase
   Map<String, dynamic> toMap() {
     return {
-      'no': no,
-      'locationName': locationName,
+      'location_name': locationName,
       'timestamp': timestamp,
     };
   }

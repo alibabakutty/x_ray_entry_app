@@ -26,7 +26,7 @@ class FirebaseService {
   Future<DoctorNameData?> getDoctorDataByName(String doctorName) async {
     final snapshot = await FirebaseFirestore.instance
         .collection('doctor_name_data')
-        .where('doctorName', isEqualTo: doctorName)
+        .where('doctor_name', isEqualTo: doctorName)
         .limit(1)
         .get();
 
@@ -51,18 +51,19 @@ class FirebaseService {
     }
   }
 
-  Future<bool> updateDoctorData(int oldNo, DoctorNameData updatedData) async {
+  Future<bool> updateDoctorData(
+      String oldName, DoctorNameData updatedData) async {
     try {
       // First check if the new no is already taken by another doctor
-      if (oldNo != updatedData.no) {
+      if (oldName != updatedData.doctorName) {
         QuerySnapshot duplicateCheck = await _db
             .collection('doctor_name_data')
-            .where('no', isEqualTo: updatedData.no)
+            .where('doctor_name', isEqualTo: updatedData.doctorName)
             .limit(1)
             .get();
 
         if (duplicateCheck.docs.isNotEmpty) {
-          print('Error: Doctor ID ${updatedData.no} already exists');
+          print('Error: Doctor Name ${updatedData.doctorName} already exists');
           return false;
         }
       }
@@ -70,15 +71,14 @@ class FirebaseService {
       // Find the document by the old no
       QuerySnapshot snapshot = await _db
           .collection('doctor_name_data')
-          .where('no', isEqualTo: oldNo)
+          .where('doctor_name', isEqualTo: oldName)
           .limit(1)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
         String docId = snapshot.docs.first.id;
         await _db.collection('doctor_name_data').doc(docId).update({
-          'no': updatedData.no,
-          'doctorName': updatedData.doctorName,
+          'doctor_name': updatedData.doctorName,
           'timestamp': FieldValue.serverTimestamp(),
         });
         return true;
@@ -94,7 +94,7 @@ class FirebaseService {
   // add part of x-ray master data to Firestore
   Future<bool> addPartOfXrayData(PartOfXrayData partOfXrayData) async {
     try {
-      await _db.collection('partOfXray').add(partOfXrayData.toMap());
+      await _db.collection('part_of_xray_data').add(partOfXrayData.toMap());
       return true;
     } catch (e) {
       print('Error adding part of x-ray data: $e');
@@ -103,10 +103,10 @@ class FirebaseService {
   }
 
   // fetch partofxraydata by partofxrayname
-  Future<PartOfXrayData?> getPartOfXrayName(String partOfXray) async {
+  Future<PartOfXrayData?> getPartOfXrayName(String partOfXrayName) async {
     final snapshot = await FirebaseFirestore.instance
-        .collection('partOfXray')
-        .where('partOfXray', isEqualTo: partOfXray)
+        .collection('part_of_xray_data')
+        .where('part_of_xray_name', isEqualTo: partOfXrayName)
         .limit(1)
         .get();
     if (snapshot.docs.isNotEmpty) {
@@ -118,7 +118,7 @@ class FirebaseService {
   // fetch all partofxrays
   Future<List<PartOfXrayData>> getAllPartOfXrays() async {
     try {
-      QuerySnapshot snapshot = await _db.collection('partOfXray').get();
+      QuerySnapshot snapshot = await _db.collection('part_of_xray_data').get();
 
       return snapshot.docs
           .map((doc) =>
@@ -131,31 +131,31 @@ class FirebaseService {
   }
 
   Future<bool> updatePartOfXrayData(
-      int oldNo, PartOfXrayData updatedData) async {
+      String oldName, PartOfXrayData updatedData) async {
     try {
       // first check if the new no is already taken by another doctor
-      if (oldNo != updatedData.no) {
+      if (oldName != updatedData.partOfXrayName) {
         QuerySnapshot duplicateCheck = await _db
-            .collection('partOfXray')
-            .where('no', isEqualTo: updatedData.no)
+            .collection('part_of_xray_data')
+            .where('part_of_xray_name', isEqualTo: updatedData.partOfXrayName)
             .limit(1)
             .get();
         if (duplicateCheck.docs.isNotEmpty) {
-          print('Error: PartofXray ID ${updatedData.no} already exists');
+          print(
+              'Error: PartofXray Name ${updatedData.partOfXrayName} already exists');
           return false;
         }
       }
       // Find the document by the old no
       QuerySnapshot snapshot = await _db
-          .collection('partOfXray')
-          .where('no', isEqualTo: oldNo)
+          .collection('part_of_xray_data')
+          .where('part_of_xray_name', isEqualTo: oldName)
           .limit(1)
           .get();
       if (snapshot.docs.isNotEmpty) {
         String docId = snapshot.docs.first.id;
-        await _db.collection('partOfXray').doc(docId).update({
-          'no': updatedData.no,
-          'partOfXray': updatedData.partOfXray,
+        await _db.collection('part_of_xray_data').doc(docId).update({
+          'part_of_xray_name': updatedData.partOfXrayName,
           'timestamp': FieldValue.serverTimestamp(),
         });
         return true;
@@ -229,7 +229,7 @@ class FirebaseService {
           .where('gmd_no', isEqualTo: oldNo)
           .limit(1)
           .get();
-          
+
       if (snapshot.docs.isNotEmpty) {
         String docId = snapshot.docs.first.id;
         await _db.collection('gmd_data').doc(docId).update({
@@ -265,7 +265,7 @@ class FirebaseService {
   Future<LocationData?> getLocationDataByName(String locationName) async {
     final snapshot = await FirebaseFirestore.instance
         .collection('location_data')
-        .where('locationName', isEqualTo: locationName)
+        .where('location_name', isEqualTo: locationName)
         .limit(1)
         .get();
     if (snapshot.docs.isNotEmpty) {
@@ -289,17 +289,19 @@ class FirebaseService {
     }
   }
 
-  Future<bool> updateLocationData(int oldNo, LocationData updatedData) async {
+  Future<bool> updateLocationData(
+      String oldName, LocationData updatedData) async {
     try {
       // First check if the new no is already taken by another location
-      if (oldNo != updatedData.no) {
+      if (oldName != updatedData.locationName) {
         QuerySnapshot duplicateCheck = await _db
             .collection('location_data')
-            .where('no', isEqualTo: updatedData.no)
+            .where('location_name', isEqualTo: updatedData.locationName)
             .get();
 
         if (duplicateCheck.docs.isNotEmpty) {
-          print('Error: Location ID ${updatedData.no} already exists!');
+          print(
+              'Error: Location Name ${updatedData.locationName} already exists!');
           return false;
         }
       }
@@ -307,14 +309,13 @@ class FirebaseService {
       // Find the document by the old no
       QuerySnapshot snapshot = await _db
           .collection('location_data')
-          .where('no', isEqualTo: oldNo)
+          .where('location_name', isEqualTo: oldName)
           .limit(1)
           .get();
       if (snapshot.docs.isNotEmpty) {
         String docId = snapshot.docs.first.id;
         await _db.collection('location_data').doc(docId).update({
-          'no': updatedData.no,
-          'locationName': updatedData.locationName,
+          'location_name': updatedData.locationName,
           'timestamp': FieldValue.serverTimestamp(),
         });
         return true;
@@ -374,18 +375,20 @@ class FirebaseService {
 
   // update reference person master
   Future<bool> updateReferencePersonData(
-      int oldNo, ReferencePersonData updatedData) async {
+      String oldName, ReferencePersonData updatedData) async {
     try {
       // first check if the new no is already taken by another reference person
-      if (oldNo != updatedData.no) {
+      if (oldName != updatedData.referencePersonName) {
         QuerySnapshot duplicateCheck = await _db
             .collection('reference_person_data')
-            .where('no', isEqualTo: updatedData.no)
+            .where('reference_person_name',
+                isEqualTo: updatedData.referencePersonName)
             .limit(1)
             .get();
 
         if (duplicateCheck.docs.isNotEmpty) {
-          print('Error: Reference Person ID ${updatedData.no} already exists!');
+          print(
+              'Error: Reference Person Name ${updatedData.referencePersonName} already exists!');
           return false;
         }
       }
@@ -393,20 +396,19 @@ class FirebaseService {
       // find the document by the old no
       QuerySnapshot snapshot = await _db
           .collection('reference_person_data')
-          .where('no', isEqualTo: oldNo)
+          .where('reference_person_name', isEqualTo: oldName)
           .limit(1)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
         String docId = snapshot.docs.first.id;
         await _db.collection('reference_person_data').doc(docId).update({
-          'no': updatedData.no,
           'reference_person_name': updatedData.referencePersonName,
           'timestamp': FieldValue.serverTimestamp(),
         });
         return true;
       } else {
-        print('Error: Reference Person ID $oldNo not found!');
+        print('Error: Reference Person Name $oldName not found!');
         return false;
       }
     } catch (e) {

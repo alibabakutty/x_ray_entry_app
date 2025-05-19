@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:x_ray_entry_app/authentication/auth_provider.dart';
 import 'package:x_ray_entry_app/modals/part_of_xray_data.dart';
 import 'package:x_ray_entry_app/services/firebase_service.dart';
 
 class Partofxraymaster extends StatefulWidget {
   const Partofxraymaster(
-      {super.key, this.partOfXray, this.isDisplayMode = false});
-  final String? partOfXray;
+      {super.key, this.partOfXrayName, this.isDisplayMode = false});
+  final String? partOfXrayName;
   final bool isDisplayMode;
 
   @override
@@ -17,13 +19,13 @@ class _PartofxraymasterState extends State<Partofxraymaster> {
   final FirebaseService firebaseService = FirebaseService();
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController noController = TextEditingController();
-  final TextEditingController partOfXrayController = TextEditingController();
+  final TextEditingController partOfXrayNameController =
+      TextEditingController();
   bool _isSubmitting = false;
   bool _isEditing = false;
   bool _isLoading = false;
 
-  PartOfXrayData? _xrayData;
+  PartOfXrayData? _xrayNameData;
   String? partOfXrayNameFromArgs;
 
   @override
@@ -38,28 +40,27 @@ class _PartofxraymasterState extends State<Partofxraymaster> {
               !widget.isDisplayMode; // only editing if not in display mode
         });
         _fetchParrtOfXrayData(args);
-      } else if (widget.partOfXray != null) {
+      } else if (widget.partOfXrayName != null) {
         setState(() {
-          partOfXrayNameFromArgs = widget.partOfXray;
+          partOfXrayNameFromArgs = widget.partOfXrayName;
           _isEditing = !widget.isDisplayMode;
         });
-        _fetchParrtOfXrayData(widget.partOfXray!);
+        _fetchParrtOfXrayData(widget.partOfXrayName!);
       }
     });
   }
 
-  Future<void> _fetchParrtOfXrayData(String partOfXray) async {
+  Future<void> _fetchParrtOfXrayData(String partOfXrayName) async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final data = await firebaseService.getPartOfXrayName(partOfXray);
+      final data = await firebaseService.getPartOfXrayName(partOfXrayName);
       if (data != null) {
         setState(() {
-          _xrayData = data;
-          noController.text = data.no.toString();
-          partOfXrayController.text = data.partOfXray;
+          _xrayNameData = data;
+          partOfXrayNameController.text = data.partOfXrayName;
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -82,14 +83,13 @@ class _PartofxraymasterState extends State<Partofxraymaster> {
       setState(() => _isSubmitting = true);
 
       final updatedPartofXrayData = PartOfXrayData(
-        no: int.parse(noController.text.trim()),
-        partOfXray: partOfXrayController.text.trim(),
-        timestamp: _xrayData?.timestamp ?? Timestamp.now(),
+        partOfXrayName: partOfXrayNameController.text.trim(),
+        timestamp: _xrayNameData?.timestamp ?? Timestamp.now(),
       );
 
       final success = _isEditing
           ? await firebaseService.updatePartOfXrayData(
-              _xrayData!.no, updatedPartofXrayData)
+              _xrayNameData!.partOfXrayName, updatedPartofXrayData)
           : await firebaseService.addPartOfXrayData(updatedPartofXrayData);
 
       setState(() => _isSubmitting = false);
@@ -101,15 +101,14 @@ class _PartofxraymasterState extends State<Partofxraymaster> {
                 ? (_isEditing
                     ? 'Part of X-Ray updated!'
                     : 'Part of X-Ray added!')
-                : 'Operation failed. ID might be already in use.'),
+                : 'Operation failed. Name might be already in use.'),
           ),
         );
 
         if (success && _isEditing) {
           Navigator.pop(context, true); // Return to previous screen
         } else if (success && !_isEditing) {
-          noController.clear();
-          partOfXrayController.clear();
+          partOfXrayNameController.clear();
         }
       }
     }
@@ -117,39 +116,22 @@ class _PartofxraymasterState extends State<Partofxraymaster> {
 
   @override
   void dispose() {
-    noController.dispose();
-    partOfXrayController.dispose();
+    partOfXrayNameController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isDisplayMode
-            ? 'Part of X-Ray Details: ${partOfXrayNameFromArgs ?? ''}'
+            ? 'Part of X-Ray Name Details: ${partOfXrayNameFromArgs ?? ''}'
             : _isEditing
                 ? 'Edit Part of X-Ray: ${partOfXrayNameFromArgs ?? ''}'
                 : 'Part of X-Ray Master'),
         centerTitle: true,
-        // actions: widget.isDisplayMode
-        //     ? [
-        //         IconButton(
-        //           icon: const Icon(Icons.edit),
-        //           onPressed: () {
-        //             // Navigate to edit mode
-        //             Navigator.pushReplacement(
-        //               context,
-        //               MaterialPageRoute(
-        //                 builder: (context) => Partofxraymaster(
-        //                   partOfXray: partOfXrayNameFromArgs,
-        //                 ),
-        //               ),
-        //             );
-        //           },
-        //         ),
-        //       ]
-        //     : null,
       ),
       body: _isLoading
           ? const Center(
@@ -157,14 +139,15 @@ class _PartofxraymasterState extends State<Partofxraymaster> {
             )
           : Padding(
               padding: const EdgeInsets.all(20.0),
-              child:
-                  widget.isDisplayMode ? _buildDisplayView() : _buildEditView(),
+              child: widget.isDisplayMode
+                  ? _buildDisplayView()
+                  : _buildEditView(authProvider),
             ),
     );
   }
 
   Widget _buildDisplayView() {
-    if (_xrayData == null) {
+    if (_xrayNameData == null) {
       return const Center(child: Text('No data available'));
     }
 
@@ -189,17 +172,12 @@ class _PartofxraymasterState extends State<Partofxraymaster> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Part of X-Ray No: ${_xrayData!.no}',
+                    'Part of X-Ray Name: ${_xrayNameData!.partOfXrayName}',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Part of X-Ray Name: ${_xrayData!.partOfXray}',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Last Updated: ${_xrayData!.timestamp.toDate()}',
+                    'Last Updated: ${_xrayNameData!.timestamp.toDate()}',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ],
@@ -211,14 +189,14 @@ class _PartofxraymasterState extends State<Partofxraymaster> {
     );
   }
 
-  Widget _buildEditView() {
+  Widget _buildEditView(AuthProvider authProvider) {
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_isEditing && _xrayData != null)
+            if (_isEditing && _xrayNameData != null)
               const Text(
                 'Edit Part of X-Ray Name',
                 style: TextStyle(
@@ -238,28 +216,7 @@ class _PartofxraymasterState extends State<Partofxraymaster> {
               ),
             const SizedBox(height: 30),
             TextFormField(
-              controller: noController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Part of X-Ray No.',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                hintText: 'Enter part of x-ray number (e.g., 1)',
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a number';
-                }
-                if (int.tryParse(value) == null) {
-                  return 'Please enter a valid number';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              controller: partOfXrayController,
+              controller: partOfXrayNameController,
               decoration: InputDecoration(
                 labelText: 'Part of X-Ray',
                 border: OutlineInputBorder(
@@ -275,25 +232,26 @@ class _PartofxraymasterState extends State<Partofxraymaster> {
               },
             ),
             const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.blue.shade700,
-                ),
-                onPressed: _isSubmitting ? null : _submitForm,
-                child: _isSubmitting
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text(
-                        _isEditing ? 'Update' : 'Submit',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
+            if (!authProvider.isGuest)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.blue.shade700,
+                  ),
+                  onPressed: _isSubmitting ? null : _submitForm,
+                  child: _isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          _isEditing ? 'Update' : 'Submit',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
+                ),
               ),
-            ),
           ],
         ),
       ),

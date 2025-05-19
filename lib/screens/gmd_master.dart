@@ -145,24 +145,6 @@ class _GmdMasterState extends State<GmdMaster> {
                 ? 'Edit GMD Master: ${gmdNoFromArgs ?? ''}'
                 : 'GMD Master'),
         centerTitle: true,
-        // actions: widget.isDisplayMode
-        //     ? [
-        //         IconButton(
-        //           icon: Icon(Icons.edit),
-        //           onPressed: () {
-        //             // Navigate to edit mode
-        //             Navigator.pushReplacement(
-        //               context,
-        //               MaterialPageRoute(
-        //                 builder: (context) => GmdMaster(
-        //                   gmdNo: gmdNoFromArgs,
-        //                 ),
-        //               ),
-        //             );
-        //           },
-        //         ),
-        //       ]
-        //     : null,
       ),
       body: _isLoading
           ? const Center(
@@ -205,6 +187,26 @@ class _GmdMasterState extends State<GmdMaster> {
                 children: [
                   Text(
                     'GMD No: ${_gmdData!.gmdNo}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Patient Name: ${_gmdData!.patientName}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Mobile Number: ${_gmdData!.mobileNumber}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Age: ${_gmdData!.age}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Sex: ${_gmdData!.sex}',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 8),
@@ -326,19 +328,27 @@ class _GmdMasterState extends State<GmdMaster> {
             },
           ),
           const SizedBox(height: 15),
-          TextFormField(
-            controller: sexController,
+          DropdownButtonFormField<String>(
+            value: sexController.text.isEmpty ? null : sexController.text,
             decoration: InputDecoration(
               labelText: 'Sex',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.blue),
-              ),
-              hintText: 'Enter Sex',
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
+            items: ['Male', 'Female', 'Other']
+                .map((sex) => DropdownMenuItem(
+                      value: sex,
+                      child: Text(sex),
+                    ))
+                .toList(),
+            onChanged: (value) {
+              if (value != null) {
+                sexController.text = value;
+              }
+            },
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter valid sex';
+                return 'Please select sex';
               }
               return null;
             },

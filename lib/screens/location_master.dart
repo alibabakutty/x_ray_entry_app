@@ -17,7 +17,6 @@ class _LocationMasterState extends State<LocationMaster> {
   final FirebaseService firebaseService = FirebaseService();
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController noController = TextEditingController();
   final TextEditingController locationNameController = TextEditingController();
   bool _isSubmitting = false;
   bool _isEditing = false;
@@ -58,7 +57,6 @@ class _LocationMasterState extends State<LocationMaster> {
       if (data != null) {
         setState(() {
           _locationData = data;
-          noController.text = data.no.toString();
           locationNameController.text = data.locationName;
         });
       } else {
@@ -84,14 +82,13 @@ class _LocationMasterState extends State<LocationMaster> {
       });
 
       final updatedLocationData = LocationData(
-        no: int.parse(noController.text.trim()),
         locationName: locationNameController.text.trim(),
         timestamp: _locationData?.timestamp ?? Timestamp.now(),
       );
 
       final success = _isEditing
           ? await firebaseService.updateLocationData(
-              _locationData!.no, updatedLocationData)
+              _locationData!.locationName, updatedLocationData)
           : await firebaseService.addLocationData(updatedLocationData);
 
       setState(() => _isSubmitting = false);
@@ -103,14 +100,13 @@ class _LocationMasterState extends State<LocationMaster> {
                 ? (_isEditing
                     ? 'Location Master Updated!'
                     : 'Location Name Added!')
-                : 'Operation failed. ID might be already in use.'),
+                : 'Operation failed. Name might be already in use.'),
           ),
         );
 
         if (success && _isEditing) {
           Navigator.pop(context, true); // Return to previous screen
         } else if (success && !_isEditing) {
-          noController.clear();
           locationNameController.clear();
         }
       }
@@ -119,7 +115,6 @@ class _LocationMasterState extends State<LocationMaster> {
 
   @override
   void dispose() {
-    noController.dispose();
     locationNameController.dispose();
     super.dispose();
   }
@@ -219,27 +214,6 @@ class _LocationMasterState extends State<LocationMaster> {
                 ),
               ),
             const SizedBox(height: 30),
-            TextFormField(
-              controller: noController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                  labelText: 'Location Number',
-                  border: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.blue),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  hintText: 'Enter Location ID or No. (e.g., 001)'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a location number';
-                }
-                if (int.tryParse(value) == null) {
-                  return 'Please enter a valid number';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20),
             // Input Fields
             TextFormField(
               controller: locationNameController,

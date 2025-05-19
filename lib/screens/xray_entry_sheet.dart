@@ -2,7 +2,12 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:x_ray_entry_app/modals/xray_entry_sheet_data.dart';
 import 'package:x_ray_entry_app/services/firebase_service.dart';
+import 'package:x_ray_entry_app/widgets/doctor_name_dropdown.dart';
+import 'package:x_ray_entry_app/widgets/gmd_number_dropdown.dart';
 import 'package:x_ray_entry_app/widgets/input_field.dart';
+import 'package:x_ray_entry_app/widgets/location_dropdown.dart';
+import 'package:x_ray_entry_app/widgets/part_of_xray_dropdown.dart';
+import 'package:x_ray_entry_app/widgets/reference_person_dropdown.dart';
 
 class XrayEntrySheet extends StatefulWidget {
   const XrayEntrySheet({super.key});
@@ -84,6 +89,17 @@ class _XrayEntrySheetState extends State<XrayEntrySheet> {
           const SnackBar(content: Text('X-Ray Sheet added successfully!')),
         );
         partOfXrayController.clear();
+        gmdNoController.clear();
+        patientNameController.clear();
+        mobileNumberController.clear();
+        ageController.clear();
+        sexController.clear();
+        doctorNameController.clear();
+        paymentTypeController.clear();
+        locationNameController.clear();
+        referenceFeeController.clear();
+        referencePersonNameController.clear();
+        paidOrDueController.clear();
       } else {
         print('Failed to submit data.');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -112,29 +128,46 @@ class _XrayEntrySheetState extends State<XrayEntrySheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Input Fields Section
-                InputField(
-                  label: 'Part of X-RAY',
+                const SizedBox(
+                  height: 10,
+                ),
+                PartOfXrayDropdown(
                   controller: partOfXrayController,
+                  label: 'Select X-Ray Part',
+                  hint: 'Choose from list',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter part of x-ray';
+                      return 'Required field';
                     }
                     return null;
                   },
                 ),
-                InputField(
-                  label: 'GMD NUMBER',
+                const SizedBox(
+                  height: 15,
+                ),
+                GmdNumberDropdown(
                   controller: gmdNoController,
-                  keyboardType: TextInputType.number,
+                  label: 'GMD No.',
+                  hint: 'Choose GMD No.',
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter GMD Number';
-                    }
-                    if (int.tryParse(value) == null) {
-                      return 'Please enter valid GMD Number';
+                    if (value == null) {
+                      return 'Invalid GMD No.!';
                     }
                     return null;
                   },
+                  onGmdSelected: (patientData) {
+                    setState(() {
+                      patientNameController.text =
+                          patientData['patient_name'] ?? '';
+                      mobileNumberController.text =
+                          patientData['mobile_number'] ?? '';
+                      ageController.text = patientData['age']?.toString() ?? '';
+                      sexController.text = patientData['sex'] ?? '';
+                    });
+                  },
+                ),
+                const SizedBox(
+                  height: 10,
                 ),
                 InputField(
                   label: 'PATIENT NAME',
@@ -180,40 +213,73 @@ class _XrayEntrySheetState extends State<XrayEntrySheet> {
                     return null;
                   },
                 ),
-                InputField(
-                  label: 'DOCTOR NAME',
+                const SizedBox(
+                  height: 10,
+                ),
+                DoctorNameDropdown(
                   controller: doctorNameController,
+                  label: 'Select doctor name',
+                  hint: 'choose from list',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter doctor name';
+                      return 'Please select doctor name';
                     }
                     return null;
                   },
                 ),
-                InputField(
-                  label: 'PAYMENT TYPE',
-                  controller: paymentTypeController,
+                const SizedBox(
+                  height: 15,
+                ),
+                DropdownButtonFormField<String>(
+                  value: paymentTypeController.text.isEmpty
+                      ? null
+                      : paymentTypeController.text,
+                  decoration: InputDecoration(
+                    labelText: 'PAYMENT TYPE',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  items: ['Cash', 'Gpay', 'Others']
+                      .map((payment) => DropdownMenuItem(
+                            value: payment,
+                            child: Text(payment),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      paymentTypeController.text = value;
+                    }
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter payment type';
+                      return 'Please select payment type';
                     }
                     return null;
                   },
                 ),
-                InputField(
-                  label: 'LOCATION',
+                const SizedBox(
+                  height: 15,
+                ),
+                LocationDropdown(
                   controller: locationNameController,
+                  label: 'select location',
+                  hint: 'choose from list',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter location name';
+                      return 'Please select location';
                     }
                     return null;
                   },
+                ),
+                const SizedBox(
+                  height: 10,
                 ),
                 InputField(
                   label: 'REFERENCE FEE',
                   controller: referenceFeeController,
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  prefixText: '₹ ',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter reference fee';
@@ -221,22 +287,46 @@ class _XrayEntrySheetState extends State<XrayEntrySheet> {
                     return null;
                   },
                 ),
-                InputField(
-                  label: 'REFERENCE PERSON',
+                const SizedBox(
+                  height: 10,
+                ),
+                ReferencePersonDropdown(
                   controller: referencePersonNameController,
+                  label: 'Reference Person',
+                  hint: 'choose from list',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter reference person name';
+                      return 'Please select reference person';
                     }
                     return null;
                   },
                 ),
-                InputField(
-                  label: 'PAID/DUE',
-                  controller: paidOrDueController,
+                const SizedBox(
+                  height: 15,
+                ),
+                DropdownButtonFormField<String>(
+                  value: paidOrDueController.text.isEmpty
+                      ? null
+                      : paidOrDueController.text,
+                  decoration: InputDecoration(
+                    labelText: 'Paid/Due',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  items: ['Paid', 'Due']
+                      .map((pay) => DropdownMenuItem(
+                            value: pay,
+                            child: Text(pay),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      paidOrDueController.text = value;
+                    }
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter paid/due status';
+                      return 'Please select paid/due';
                     }
                     return null;
                   },
