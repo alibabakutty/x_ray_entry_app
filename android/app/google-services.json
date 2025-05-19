@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "510868151047",
+    "project_id": "x-ray-entry",
+    "storage_bucket": "x-ray-entry.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:510868151047:android:04715ad9b5c8a421a183a2",
+        "android_client_info": {
+          "package_name": "com.example.x_ray_entry_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1TFP26VVCRW7cjtWqBwX0FAllPZMz9hI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
