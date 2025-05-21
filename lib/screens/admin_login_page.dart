@@ -13,6 +13,8 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _usernameController =
+      TextEditingController(); // New controller for username
   String? errorMessage = '';
   bool isLogin = true; // toggle between login and register
   bool isLoading = false;
@@ -33,20 +35,21 @@ class _LoginPageState extends State<LoginPage> {
           password: _passwordController.text,
         );
       } else {
-        // Employee Register
+        // Register with username
         await Auth().createUserAccount(
           email: _emailController.text,
           password: _passwordController.text,
+          username: _usernameController.text, // Pass username to auth
         );
       }
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/gateway');
       }
     } on FirebaseAuthException catch (e) {
-      String message = 'An error occured';
+      String message = 'An error occurred';
 
       switch (e.code) {
-        case 'invalid e-mail':
+        case 'invalid-email':
           message = 'Please enter a valid email address';
           break;
         case 'user-disabled':
@@ -68,11 +71,12 @@ class _LoginPageState extends State<LoginPage> {
           message = e.message ?? 'Authentication failed';
       }
       setState(() {
-        errorMessage = e.message;
+        errorMessage =
+            message; // Use the localized message instead of e.message
       });
     } catch (e) {
       setState(() {
-        errorMessage = 'An unexpected error occured';
+        errorMessage = 'An unexpected error occurred';
       });
     } finally {
       if (mounted) {
@@ -87,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isLogin ? 'Login' : 'Register'),
+        title: Text(isLogin ? 'Admin Login' : 'Register'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -95,6 +99,25 @@ class _LoginPageState extends State<LoginPage> {
           key: _formKey,
           child: Column(
             children: [
+              // Only show username field when registering
+              if (!isLogin) ...[
+                TextFormField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                  ),
+                  validator: (value) {
+                    if (!isLogin && (value == null || value.isEmpty)) {
+                      return 'Please choose a username';
+                    }
+                    if (value != null && value.length < 3) {
+                      return 'Username must be at least 3 characters';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
@@ -123,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                     return 'Please enter your password';
                   }
                   if (value.length < 6) {
-                    return 'Password must be atleast 6 characters';
+                    return 'Password must be at least 6 characters';
                   }
                   return null;
                 },
@@ -148,6 +171,10 @@ class _LoginPageState extends State<LoginPage> {
                         setState(() {
                           isLogin = !isLogin;
                           errorMessage = '';
+                          // Clear controllers when switching modes
+                          if (isLogin) {
+                            _usernameController.clear();
+                          }
                         });
                       },
                 child: Text(isLogin
@@ -159,5 +186,13 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _usernameController.dispose();
+    super.dispose();
   }
 }

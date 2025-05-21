@@ -493,6 +493,7 @@ class FirebaseService {
           'executive_name': updatedData.executiveName,
           'mobile_number': updatedData.mobileNumber,
           'email': updatedData.email,
+          'password': updatedData.password,
           'status': updatedData.status,
           'timestamp': FieldValue.serverTimestamp(),
         });

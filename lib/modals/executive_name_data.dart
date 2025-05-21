@@ -4,6 +4,7 @@ class ExecutiveNameData {
   final String executiveName;
   final String mobileNumber;
   final String email;
+  final String password;
   final String status; // active or inactive
   final Timestamp timestamp;
 
@@ -11,6 +12,7 @@ class ExecutiveNameData {
     required this.executiveName,
     required this.mobileNumber,
     required this.email,
+    required this.password,
     this.status = 'active',
     required this.timestamp,
   });
@@ -21,6 +23,7 @@ class ExecutiveNameData {
       executiveName: data['executive_name'] ?? '',
       mobileNumber: data['mobile_number'] ?? '',
       email: data['email'] ?? '',
+      password: data['password'] ?? '',
       status: data['status'] ?? 'active',
       timestamp: data['timestamp'] ?? Timestamp.now(),
     );
@@ -32,6 +35,7 @@ class ExecutiveNameData {
       'executive_name': executiveName,
       'mobile_number': mobileNumber,
       'email': email,
+      'password': password,
       'status': status,
       'timestamp': timestamp,
     };

@@ -7,7 +7,7 @@ import 'package:x_ray_entry_app/screens/cda_page.dart';
 import 'package:x_ray_entry_app/screens/display_master_page.dart';
 import 'package:x_ray_entry_app/screens/executive_name_master.dart';
 import 'package:x_ray_entry_app/screens/gateway_page.dart';
-import 'package:x_ray_entry_app/screens/login_page.dart';
+import 'package:x_ray_entry_app/screens/admin_login_page.dart';
 import 'package:x_ray_entry_app/screens/report_master_page.dart';
 import 'package:x_ray_entry_app/screens/update_master_page.dart';
 import 'package:x_ray_entry_app/screens/doctor_name_master.dart';

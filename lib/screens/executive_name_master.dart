@@ -19,10 +19,12 @@ class ExecutiveNameMaster extends StatefulWidget {
 class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
   final FirebaseService firebaseService = FirebaseService();
   final _formKey = GlobalKey<FormState>();
+  bool _obsecureText = true; // initially password is hidden
 
   final TextEditingController executiveNameController = TextEditingController();
   final TextEditingController mobileNumberController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   final TextEditingController statusController = TextEditingController();
 
   bool _isSubmitting = false;
@@ -68,6 +70,7 @@ class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
           executiveNameController.text = data.executiveName;
           mobileNumberController.text = data.mobileNumber;
           emailController.text = data.email;
+          passwordController.text = data.password;
           statusController.text = data.status;
         });
       } else {
@@ -94,6 +97,7 @@ class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
         executiveName: executiveNameController.text.trim(),
         mobileNumber: mobileNumberController.text.trim(),
         email: emailController.text.trim(),
+        password: passwordController.text.trim(),
         timestamp: _executiveNameData?.timestamp ?? Timestamp.now(),
       );
 
@@ -119,6 +123,7 @@ class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
           executiveNameController.clear();
           mobileNumberController.clear();
           emailController.clear();
+          passwordController.clear();
           statusController.clear();
         }
       }
@@ -130,6 +135,7 @@ class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
     executiveNameController.dispose();
     mobileNumberController.dispose();
     emailController.dispose();
+    passwordController.dispose();
     statusController.dispose();
     super.dispose();
   }
@@ -291,21 +297,47 @@ class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
               },
             ),
             const SizedBox(height: 15),
-            // TextFormField(
-            //   controller: statusController,
-            //   decoration: InputDecoration(
-            //     labelText: 'Status',
-            //     border:
-            //         OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            //     hintText: 'Enter status',
-            //   ),
-            //   validator: (value) {
-            //     if (value == null || value.isEmpty) {
-            //       return 'Please enter a status';
-            //     }
-            //     return null;
-            //   },
-            // ),
+            TextFormField(
+              controller: passwordController,
+              obscureText: _obsecureText,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                hintText: 'Enter password.',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                      _obsecureText ? Icons.visibility : Icons.visibility_off),
+                  onPressed: () {
+                    setState(() {
+                      _obsecureText = !_obsecureText;
+                    });
+                  },
+                ),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a password';
+                }
+                if (value.length < 8) {
+                  return 'Password must be at least 8 characters long';
+                }
+                if (!value.contains(RegExp(r'[A-Z]'))) {
+                  return 'Password must contain at least one uppercase letter';
+                }
+                if (!value.contains(RegExp(r'[a-z]'))) {
+                  return 'Password must contain at least one lowercase letter';
+                }
+                if (!value.contains(RegExp(r'[0-9]'))) {
+                  return 'Password must contain at least one digit';
+                }
+                if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}<>]'))) {
+                  return 'Password must contains atleast one special character';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 15),
             DropdownButtonFormField<String>(
               value:
                   statusController.text.isEmpty ? null : statusController.text,
