@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:decimal/decimal.dart';
 
 class XrayEntrySheetData {
@@ -13,6 +14,7 @@ class XrayEntrySheetData {
   final Decimal referenceFee;
   final String referencePersonName;
   final String paidOrDue;
+  final Timestamp timestamp;
 
   XrayEntrySheetData({
     required this.partOfXray,
@@ -27,6 +29,7 @@ class XrayEntrySheetData {
     required this.referenceFee,
     required this.referencePersonName,
     required this.paidOrDue,
+    required this.timestamp,
   });
 
   // convert data from Firestore to a XrayEntrySheetData object
@@ -44,6 +47,7 @@ class XrayEntrySheetData {
       referenceFee: Decimal.parse((data['reference_fee'] ?? 0.0).toString()),
       referencePersonName: data['referencePersonName'] ?? '',
       paidOrDue: data['paid_or_due'] ?? '',
+      timestamp: data['timestamp'] ?? Timestamp.now(),
     );
   }
 
@@ -62,6 +66,7 @@ class XrayEntrySheetData {
       'reference_fee': referenceFee.toDouble(), // convert decimal to double
       'referencePersonName': referencePersonName,
       'paid_or_due': paidOrDue,
+      'timestamp': timestamp,
     };
   }
 }

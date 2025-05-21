@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:x_ray_entry_app/modals/doctor_name_data.dart';
+import 'package:x_ray_entry_app/modals/executive_name_data.dart';
 import 'package:x_ray_entry_app/modals/gmd_data.dart';
 import 'package:x_ray_entry_app/modals/location_data.dart';
 import 'package:x_ray_entry_app/modals/part_of_xray_data.dart';
@@ -417,15 +418,175 @@ class FirebaseService {
     }
   }
 
+  // add executive name master data to firestore
+  Future<bool> addExecutiveNameData(ExecutiveNameData executiveNameData) async {
+    try {
+      await _db
+          .collection('executive_name_data')
+          .add(executiveNameData.toFirestore());
+      return true;
+    } catch (e) {
+      print('Error adding executive name data: $e');
+      return false;
+    }
+  }
+
+  // fetch executive name data by mobile number
+  Future<ExecutiveNameData?> getExecutiveByMobileNumber(
+      String mobileNumber) async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('executive_name_data')
+        .where('mobile_number', isEqualTo: mobileNumber)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      return ExecutiveNameData.fromFirestore(snapshot.docs.first.data());
+    }
+    return null;
+  }
+
+  // fetch all executive names
+  Future<List<ExecutiveNameData>> getAllExecutiveNames() async {
+    try {
+      QuerySnapshot snapshot =
+          await _db.collection('executive_name_data').get();
+
+      return snapshot.docs
+          .map((doc) => ExecutiveNameData.fromFirestore(
+              doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error fetching all executive names: $e');
+      return [];
+    }
+  }
+
+  // update executive name
+  Future<bool> updateExecutiveData(
+      String oldMobileNumber, ExecutiveNameData updatedData) async {
+    try {
+      // first check if the new no is already taken by another executive
+      if (oldMobileNumber != updatedData.mobileNumber) {
+        QuerySnapshot duplicateCheck = await _db
+            .collection('executive_name_data')
+            .where('mobile_number', isEqualTo: updatedData.mobileNumber)
+            .limit(1)
+            .get();
+        if (duplicateCheck.docs.isNotEmpty) {
+          print(
+              'Error: Executive Mobile No. ${updatedData.mobileNumber} already exists');
+          return false;
+        }
+      }
+
+      // find the document by the old mobile no
+      QuerySnapshot snapshot = await _db
+          .collection('executive_name_data')
+          .where('mobile_number', isEqualTo: oldMobileNumber)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        String docId = snapshot.docs.first.id;
+        await _db.collection('executive_name_data').doc(docId).update({
+          'executive_name': updatedData.executiveName,
+          'mobile_number': updatedData.mobileNumber,
+          'email': updatedData.email,
+          'status': updatedData.status,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Error updating executive data: $e');
+      return false;
+    }
+  }
+
+  // Collection reference
+  CollectionReference get _xrayCollection => _db.collection('xray_sheet_data');
+
   // add x-ray sheet data to Firestore
   Future<bool> addXrayEntrySheetData(
       XrayEntrySheetData xrayEntrySheetData) async {
     try {
-      await _db.collection('xray_sheet_data').add(xrayEntrySheetData.toMap());
+      await _xrayCollection.add(xrayEntrySheetData.toMap());
       return true;
     } catch (e) {
       print('Error submitting x-ray entry sheet data:');
       return false;
     }
+  }
+
+  // fetch all x-ray entries by date
+  Stream<List<XrayEntrySheetData>> getAllEntries() {
+    return _xrayCollection
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => XrayEntrySheetData.fromFirestore(
+                  doc.data() as Map<String, dynamic>,
+                ))
+            .toList());
+  }
+
+  // fetch all x-ray entries by gmdnumber
+  Stream<List<XrayEntrySheetData>> getEntriesByGmdNumber(int gmdNo) {
+    return _xrayCollection
+        .where('gmd_no', isEqualTo: gmdNo)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => XrayEntrySheetData.fromFirestore(
+                doc.data() as Map<String, dynamic>))
+            .toList());
+  }
+
+  // fetch all x-ray entries by patientname
+  Stream<List<XrayEntrySheetData>> getEntriesByPatientName(String patientName) {
+    return _xrayCollection
+        .where('patient_name', isEqualTo: patientName)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => XrayEntrySheetData.fromFirestore(
+                doc.data() as Map<String, dynamic>))
+            .toList());
+  }
+
+  // fetch all x-ray entries by mobilenumber
+  Stream<List<XrayEntrySheetData>> getEntriesByMobileNumber(
+      String mobileNumber) {
+    return _xrayCollection
+        .where('mobile_number', isEqualTo: mobileNumber)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => XrayEntrySheetData.fromFirestore(
+                doc.data() as Map<String, dynamic>))
+            .toList());
+  }
+
+  // fetch entries within a date range
+  Stream<List<XrayEntrySheetData>> getEntriesByDateRange({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) {
+    return _xrayCollection
+        .where('timestamp',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+        .where('timestamp',
+            isLessThanOrEqualTo:
+                Timestamp.fromDate(endDate.add(Duration(days: 1))))
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => XrayEntrySheetData.fromFirestore(
+                  doc.data() as Map<String, dynamic>,
+                ))
+            .toList());
   }
 }

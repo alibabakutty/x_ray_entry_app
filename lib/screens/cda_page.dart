@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:x_ray_entry_app/authentication/auth_provider.dart';
 
 class CdaPage extends StatelessWidget {
   const CdaPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final isGuest = authProvider.isGuest;
     // Get the master type from the arguments
     final masterType = ModalRoute.of(context)?.settings.arguments as String?;
 
@@ -15,15 +19,9 @@ class CdaPage extends StatelessWidget {
       'doctorName': '/doctorNameCreate',
       'location': '/locationCreate',
       'referencePerson': '/referencePersonCreate',
+      'executive': '/executiveNameCreate'
     };
 
-    // final updateRouteMap = <String, String>{
-    //   'partOfXray': '/partOfXrayUpdate',
-    //   'gmd': '/gmdUpdate',
-    //   'doctorName': '/doctorNameUpdate',
-    //   'location': '/locationUpdate',
-    //   'referencePerson': '/referencePersonUpdate',
-    // };
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -34,15 +32,16 @@ class CdaPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Create Button
-              _buildActionButton(
-                context: context,
-                icon: Icons.add,
-                label: 'Create',
-                route: masterType != null
-                    ? createRouteMap[masterType] ?? '/'
-                    : '/',
-                color: Colors.green.shade600,
-              ),
+              if (!isGuest)
+                _buildActionButton(
+                  context: context,
+                  icon: Icons.add,
+                  label: 'Create',
+                  route: masterType != null
+                      ? createRouteMap[masterType] ?? '/'
+                      : '/',
+                  color: Colors.green.shade600,
+                ),
               const SizedBox(height: 20),
               // Display Button
               _buildActionButton(
@@ -55,14 +54,15 @@ class CdaPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               // Update Button
-              _buildActionButton(
-                context: context,
-                icon: Icons.edit,
-                label: 'Update',
-                route: '/updateMasterPage',
-                color: Colors.orange.shade600,
-                arguments: masterType,
-              ),
+              if (!isGuest)
+                _buildActionButton(
+                  context: context,
+                  icon: Icons.edit,
+                  label: 'Update',
+                  route: '/updateMasterPage',
+                  color: Colors.orange.shade600,
+                  arguments: masterType,
+                ),
               const SizedBox(height: 20),
             ],
           ),

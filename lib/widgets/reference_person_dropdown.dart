@@ -8,12 +8,12 @@ class ReferencePersonDropdown extends StatefulWidget {
   final FormFieldValidator<String>? validator;
 
   const ReferencePersonDropdown({
-    Key? key,
+    super.key,
     required this.controller,
     this.label = 'Reference Person',
     this.hint = 'Select Reference Person',
     this.validator,
-  }) : super(key: key);
+  });
 
   @override
   State<ReferencePersonDropdown> createState() =>

@@ -8,12 +8,12 @@ class DoctorNameDropdown extends StatefulWidget {
   final FormFieldValidator<String>? validator;
 
   const DoctorNameDropdown({
-    Key? key,
+    super.key,
     required this.controller,
     this.label = 'Doctor Name',
     this.hint = 'Select Doctor Name',
     this.validator,
-  }) : super(key: key);
+  });
 
   @override
   State<DoctorNameDropdown> createState() => _DoctorNameDropdownState();

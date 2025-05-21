@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:x_ray_entry_app/authentication/auth_provider.dart';
 
 class GatewayPage extends StatefulWidget {
   const GatewayPage({super.key});
@@ -10,42 +12,112 @@ class GatewayPage extends StatefulWidget {
 class _GatewayPageState extends State<GatewayPage> {
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('X-Ray Management System'),
         centerTitle: true,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF3A015C), // Dark Velvet Purple
+                Color(0xFF3A015C), // Black with Purple Undertone
+              ],
+            ),
+          ),
+        ),
+        titleTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            tooltip: 'Logout',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Logout'),
+                    content: const Text('Are you sure you want to logout?'),
+                    actions: [
+                      TextButton(
+                        child: const Text('Cancel'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      TextButton(
+                        child: const Text('Logout'),
+                        onPressed: () {
+                          authProvider.logout();
+                          Navigator.of(context).pop();
+                          Navigator.of(context)
+                              .pushReplacementNamed('/adminLogin');
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Master Section
-            _buildSectionHeader('Master'),
-            const SizedBox(height: 10),
-            _buildNavigationButton(context, 'Part of X-Ray', '/cda',
-                masterType: 'partOfXray'),
-            _buildNavigationButton(context, 'GMD Master', '/cda',
-                masterType: 'gmd'),
-            _buildNavigationButton(context, 'Doctor Name', '/cda',
-                masterType: 'doctorName'),
-            _buildNavigationButton(context, 'Location', '/cda',
-                masterType: 'location'),
-            _buildNavigationButton(context, 'Reference Person', '/cda',
-                masterType: 'referencePerson'),
-            const SizedBox(height: 30),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF3A015C), // Dark Velvet Purple
+              Color(0xFF11001C), // Black with Purple Undertone
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Master Section
+              _buildSectionHeader('Master'),
+              const SizedBox(height: 10),
+              _buildNavigationButton(context, 'Part of X-Ray', '/cda',
+                  masterType: 'partOfXray'),
+              _buildNavigationButton(context, 'GMD Master', '/cda',
+                  masterType: 'gmd'),
+              _buildNavigationButton(context, 'Doctor Name', '/cda',
+                  masterType: 'doctorName'),
+              _buildNavigationButton(context, 'Location', '/cda',
+                  masterType: 'location'),
+              _buildNavigationButton(context, 'Reference Person', '/cda',
+                  masterType: 'referencePerson'),
+              _buildNavigationButton(context, 'Executive Name', '/cda',
+                  masterType: 'executive'),
+              const SizedBox(height: 30),
 
-            // Entry Section
-            _buildSectionHeader('Entry'),
-            const SizedBox(height: 10),
-            _buildNavigationButton(context, 'X-Ray Entry', '/xrayEntryCreate'),
-            const SizedBox(height: 30),
+              // Entry Section
+              _buildSectionHeader('Entry'),
+              const SizedBox(height: 10),
+              _buildNavigationButton(
+                  context, 'X-Ray Entry', '/xrayEntryCreate'),
+              const SizedBox(height: 30),
 
-            // Reports Section
-            _buildSectionHeader('Reports'),
-            const SizedBox(height: 10),
-            _buildNavigationButton(context, 'Entry Reports', '/entryReports'),
-          ],
+              // Reports Section
+              _buildSectionHeader('Reports'),
+              const SizedBox(height: 10),
+              _buildNavigationButton(
+                  context, 'Entry Reports', '/reportMasterPage'),
+            ],
+          ),
         ),
       ),
     );
@@ -57,7 +129,7 @@ class _GatewayPageState extends State<GatewayPage> {
       style: const TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.bold,
-        color: Colors.blue,
+        color: Colors.white,
       ),
     );
   }
@@ -70,17 +142,18 @@ class _GatewayPageState extends State<GatewayPage> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: Colors.blue.shade700,
+          backgroundColor: Colors.blue.shade700.withOpacity(0.8),
           padding: const EdgeInsets.symmetric(vertical: 15),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
+          elevation: 5,
         ),
         onPressed: () {
           Navigator.pushNamed(
             context,
             route,
-            arguments: masterType, // Pass the masterType argument if needed
+            arguments: masterType,
           );
         },
         child: Text(

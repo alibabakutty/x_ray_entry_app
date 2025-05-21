@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:x_ray_entry_app/modals/xray_entry_sheet_data.dart';
 import 'package:x_ray_entry_app/services/firebase_service.dart';
 import 'package:x_ray_entry_app/widgets/doctor_name_dropdown.dart';
@@ -74,6 +76,7 @@ class _XrayEntrySheetState extends State<XrayEntrySheet> {
             Decimal.zero, // parse as decimal
         referencePersonName: referencePersonNameController.text.trim(),
         paidOrDue: paidOrDueController.text.trim(),
+        timestamp: Timestamp.now(),
       );
 
       final success =
@@ -333,6 +336,16 @@ class _XrayEntrySheetState extends State<XrayEntrySheet> {
                 ),
 
                 const SizedBox(height: 30),
+                // Add this above your submit button
+                Text(
+                  'Entry Time: ${DateFormat('dd-MM-yyyy hh:mm a').format(DateTime.now())}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 10),
                 // beautiful submit button
                 Center(
                   child: ElevatedButton.icon(

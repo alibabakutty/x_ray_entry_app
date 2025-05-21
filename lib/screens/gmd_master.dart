@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:x_ray_entry_app/authentication/auth_provider.dart';
 import 'package:x_ray_entry_app/modals/gmd_data.dart';
 import 'package:x_ray_entry_app/services/firebase_service.dart';
 
@@ -137,6 +139,8 @@ class _GmdMasterState extends State<GmdMaster> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isDisplayMode
@@ -152,8 +156,9 @@ class _GmdMasterState extends State<GmdMaster> {
             )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
-              child:
-                  widget.isDisplayMode ? _buildDisplayView() : _buildEditView(),
+              child: widget.isDisplayMode
+                  ? _buildDisplayView()
+                  : _buildEditView(authProvider),
             ),
     );
   }
@@ -223,7 +228,7 @@ class _GmdMasterState extends State<GmdMaster> {
     );
   }
 
-  Widget _buildEditView() {
+  Widget _buildEditView(AuthProvider authProvider) {
     return Form(
       key: _formKey,
       child: Column(
@@ -355,25 +360,26 @@ class _GmdMasterState extends State<GmdMaster> {
           ),
           const SizedBox(height: 25),
           // Submit
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.blue.shade700,
-              ),
-              onPressed: _isSubmitting ? null : _submitForm,
-              child: _isSubmitting
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Text(
-                      _isEditing ? 'Update' : 'Submit',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
+          if (!authProvider.isGuest)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.blue.shade700,
+                ),
+                onPressed: _isSubmitting ? null : _submitForm,
+                child: _isSubmitting
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                        _isEditing ? 'Update' : 'Submit',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                        ),
                       ),
-                    ),
+              ),
             ),
-          ),
           const SizedBox(height: 20), // Extra space at bottom
         ],
       ),

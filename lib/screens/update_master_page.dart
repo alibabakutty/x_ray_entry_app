@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:x_ray_entry_app/modals/gmd_data.dart';
 
 class UpdateMasterPage extends StatefulWidget {
   const UpdateMasterPage({super.key});
@@ -13,12 +14,15 @@ class _UpdateMasterPageState extends State<UpdateMasterPage> {
   List<String> partOfXrayNames = [];
   List<String> locationNames = [];
   List<String> referencePersonNames = [];
+  List<String> executivePersonMobileNumbers = [];
   List<int> gmdNumbers = []; // Changed to int
+  List<GmdData> gmdDataList = [];
   bool isLoading = false;
   bool hasFetchedDoctors = false;
   bool hasFetchedPartOfXrayNames = false;
   bool hasFetchedLocationNames = false;
   bool hasFetchedReferencePersonNames = false;
+  bool hasFetchedExecutivePersonMobileNumbers = false;
   bool hasFetchedGmdNumbers = false;
   String? masterType;
 
@@ -50,6 +54,8 @@ class _UpdateMasterPageState extends State<UpdateMasterPage> {
         await _fetchReferencePersonNames();
       } else if (masterType == 'gmd') {
         await _fetchGmdNumbers();
+      } else if (masterType == 'executive') {
+        await _fetchExecutivePersonMobileNumbers();
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -138,28 +144,53 @@ class _UpdateMasterPageState extends State<UpdateMasterPage> {
     }
   }
 
+  Future<void> _fetchExecutivePersonMobileNumbers() async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('executive_name_data')
+          .get();
+
+      setState(() {
+        executivePersonMobileNumbers = snapshot.docs
+            .map((doc) =>
+                (doc.data() as Map<String, dynamic>)['mobile_number'] as String)
+            .toList();
+        hasFetchedExecutivePersonMobileNumbers = true;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching Executive Persons: $e')),
+      );
+    }
+  }
+
   Future<void> _fetchGmdNumbers() async {
     try {
       QuerySnapshot snapshot =
           await FirebaseFirestore.instance.collection('gmd_data').get();
 
       setState(() {
-        gmdNumbers = snapshot.docs
+        gmdDataList = snapshot.docs
             .map((doc) {
               final data = doc.data() as Map<String, dynamic>;
-              final rawValue = data['gmd_no'];
-
-              if (rawValue is int) return rawValue;
-              if (rawValue is String) return int.tryParse(rawValue) ?? 0;
-              return 0;
+              return GmdData(
+                gmdNo: data['gmd_no'] is int
+                    ? data['gmd_no']
+                    : int.tryParse(data['gmd_no']?.toString() ?? '0') ?? 0,
+                patientName: data['patient_name']?.toString() ?? '',
+                mobileNumber: data['mobile_number']?.toString() ?? '',
+                age: data['age'] is int ? data['age'] : 0,
+                sex: data['sex']?.toString() ?? '',
+                timestamp: data['timestamp'] ?? Timestamp.now(),
+              );
             })
-            .where((value) => value != 0)
+            .where((gmd) => gmd.gmdNo != 0)
             .toList();
         hasFetchedGmdNumbers = true;
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching GMD numbers: $e')),
+        SnackBar(content: Text('Error fetching GMD data: $e')),
       );
     }
   }
@@ -175,6 +206,8 @@ class _UpdateMasterPageState extends State<UpdateMasterPage> {
       route = '/locationUpdate';
     } else if (masterType == 'referencePerson') {
       route = '/referencePersonUpdate';
+    } else if (masterType == 'executive') {
+      route = '/executiveNameUpdate';
     } else if (masterType == 'gmd') {
       route = '/gmdUpdate';
     } else {
@@ -201,7 +234,9 @@ class _UpdateMasterPageState extends State<UpdateMasterPage> {
                       ? 'Reference Person Names'
                       : masterType == 'gmd'
                           ? 'GMD Numbers'
-                          : 'Location Names',
+                          : masterType == 'executive'
+                              ? 'Executive Person Names'
+                              : 'Location Names',
         ),
         actions: [
           IconButton(
@@ -230,6 +265,8 @@ class _UpdateMasterPageState extends State<UpdateMasterPage> {
       return _buildReferencePersonList();
     } else if (masterType == 'gmd') {
       return _buildGmdNumbersList();
+    } else if (masterType == 'executive') {
+      return _buildExecutivePersonMobileNumbersList();
     } else {
       return const Center(child: Text('Invalid master type'));
     }
@@ -315,20 +352,52 @@ class _UpdateMasterPageState extends State<UpdateMasterPage> {
           );
   }
 
+  Widget _buildExecutivePersonMobileNumbersList() {
+    if (!hasFetchedExecutivePersonMobileNumbers) {
+      return const Center(
+          child: Text('Press load to fetch executive person mobile numbers'));
+    }
+    return executivePersonMobileNumbers.isEmpty
+        ? const Center(
+            child:
+                Text('No Executive persons available with this mobile number'))
+        : ListView.builder(
+            itemCount: executivePersonMobileNumbers.length,
+            itemBuilder: (context, index) {
+              return Card(
+                child: ListTile(
+                  title: Text(executivePersonMobileNumbers[index]),
+                  leading: const Icon(Icons.person),
+                  onTap: () =>
+                      _navigateToEditPage(executivePersonMobileNumbers[index]),
+                ),
+              );
+            },
+          );
+  }
+
   Widget _buildGmdNumbersList() {
     if (!hasFetchedGmdNumbers) {
       return const Center(child: Text('Press load to fetch GMD numbers'));
     }
-    return gmdNumbers.isEmpty
+    return gmdDataList.isEmpty
         ? const Center(child: Text('No GMD Numbers Available'))
         : ListView.builder(
-            itemCount: gmdNumbers.length,
+            itemCount: gmdDataList.length,
             itemBuilder: (context, index) {
+              final gmd = gmdDataList[index];
               return Card(
                 child: ListTile(
-                  title: Text(gmdNumbers[index].toString()),
+                  title: Text('GMD No.: ${gmd.gmdNo}'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Patient Name: ${gmd.patientName}'),
+                      Text('Mobile No.: ${gmd.mobileNumber}')
+                    ],
+                  ),
                   leading: const Icon(Icons.numbers),
-                  onTap: () => _navigateToEditPage(gmdNumbers[index]),
+                  onTap: () => _navigateToEditPage(gmd.gmdNo),
                 ),
               );
             },

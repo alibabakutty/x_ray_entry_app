@@ -46,7 +46,8 @@ class _WidgetTreeState extends State<WidgetTree> {
                       'X-Ray ERP System',
                       style: TextStyle(
                         fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Aptos',
+                        fontWeight: FontWeight.w800,
                         color: Colors.white,
                         letterSpacing: 1.2,
                       ),
@@ -115,7 +116,7 @@ class _WidgetTreeState extends State<WidgetTree> {
                       // Guest Login Button
                       _buildLoginButton(
                         context,
-                        text: 'Continue as Guest',
+                        text: 'Executive Login',
                         icon: Icons.person_outline,
                         onTap: () {
                           Provider.of<AuthProvider>(context, listen: false)
@@ -174,8 +175,9 @@ class _WidgetTreeState extends State<WidgetTree> {
               Text(
                 text,
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 20,
+                  fontFamily: 'Aptos',
+                  fontWeight: FontWeight.w800,
                   color: Colors.white,
                 ),
               ),

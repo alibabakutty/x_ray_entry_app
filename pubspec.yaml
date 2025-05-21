@@ -39,6 +39,7 @@ dependencies:
   decimal: ^3.2.1
   firebase_auth: ^5.5.3
   provider: ^6.1.5
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -56,11 +57,21 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
+
+  # Add fonts here (PROPERLY FORMATTED)
+  fonts:
+    - family: Aptos
+      fonts:
+        - asset: assets/fonts/Aptos-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Aptos-ExtraBold.ttf
+          weight: 800  # ExtraBold is typically 800
+        - asset: assets/fonts/Aptos-SemiBold.ttf
+          weight: 600  # SemiBold is typically 600
+
+  # assets:  # Uncomment if you have other assets
+  #   - assets/images/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -8,12 +8,12 @@ class PartOfXrayDropdown extends StatefulWidget {
   final FormFieldValidator<String>? validator;
 
   const PartOfXrayDropdown({
-    Key? key,
+    super.key,
     required this.controller,
     this.label = 'Part of X-RAY',
     this.hint = 'Select part of X-RAY',
     this.validator,
-  }) : super(key: key);
+  });
 
   @override
   State<PartOfXrayDropdown> createState() => _PartOfXrayDropdownState();

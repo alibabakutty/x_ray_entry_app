@@ -10,13 +10,13 @@ class GmdNumberDropdown extends StatefulWidget {
       onGmdSelected; // new callback for related input fields
 
   const GmdNumberDropdown({
-    Key? key,
+    super.key,
     required this.controller,
     this.label = 'GMD No.',
     this.hint = 'Select GMD No.',
     this.validator,
     this.onGmdSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<GmdNumberDropdown> createState() => _GmdNumberDropdownState();

@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:x_ray_entry_app/authentication/auth_provider.dart';
 import 'package:x_ray_entry_app/modals/reference_person_data.dart';
 import 'package:x_ray_entry_app/services/firebase_service.dart';
 
@@ -126,6 +128,8 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isDisplayMode
@@ -142,8 +146,9 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
             )
           : Padding(
               padding: const EdgeInsets.all(20.0),
-              child:
-                  widget.isDisplayMode ? _buildDisplayView() : _buildEditView(),
+              child: widget.isDisplayMode
+                  ? _buildDisplayView()
+                  : _buildEditView(authProvider),
             ),
     );
   }
@@ -179,11 +184,6 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
                     'Reference Person Name: ${_referencePersonData!.referencePersonName}',
                     style: const TextStyle(fontSize: 16),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Last Updated: ${_referencePersonData!.timestamp.toDate()}',
-                    style: const TextStyle(fontSize: 16),
-                  ),
                 ],
               ),
             ),
@@ -193,7 +193,7 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
     );
   }
 
-  Widget _buildEditView() {
+  Widget _buildEditView(AuthProvider authProvider) {
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
@@ -238,25 +238,26 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
             ),
             const SizedBox(height: 30),
             // Submit Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.blue.shade700,
-                ),
-                onPressed: _isSubmitting ? null : _submitForm,
-                child: _isSubmitting
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text(
-                        _isEditing ? 'Update' : 'Submit',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
+            if (!authProvider.isGuest)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.blue.shade700,
+                  ),
+                  onPressed: _isSubmitting ? null : _submitForm,
+                  child: _isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          _isEditing ? 'Update' : 'Submit',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
+                ),
               ),
-            ),
           ],
         ),
       ),

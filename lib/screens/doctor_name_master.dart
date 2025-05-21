@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import 'package:x_ray_entry_app/authentication/auth_provider.dart';
 import 'package:x_ray_entry_app/services/firebase_service.dart';
 import 'package:x_ray_entry_app/modals/doctor_name_data.dart';
 
@@ -119,6 +121,8 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isDisplayMode
@@ -132,8 +136,9 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
           ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(20),
-              child:
-                  widget.isDisplayMode ? _buildDisplayView() : _buildEditView(),
+              child: widget.isDisplayMode
+                  ? _buildDisplayView()
+                  : _buildEditView(authProvider),
             ),
     );
   }
@@ -167,9 +172,9 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
                 children: [
                   Text('Doctor Name: ${_doctorData!.doctorName}',
                       style: const TextStyle(fontSize: 16)),
-                  const SizedBox(height: 8),
-                  Text('Last Updated: ${_doctorData!.timestamp.toDate()}',
-                      style: const TextStyle(fontSize: 16)),
+                  // const SizedBox(height: 8),
+                  // Text('Last Updated: ${_doctorData!.timestamp.toDate()}',
+                  //     style: const TextStyle(fontSize: 16)),
                 ],
               ),
             ),
@@ -179,7 +184,7 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
     );
   }
 
-  Widget _buildEditView() {
+  Widget _buildEditView(AuthProvider authProvider) {
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
@@ -221,25 +226,26 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
               },
             ),
             const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.blue.shade700,
-                ),
-                onPressed: _isSubmitting ? null : _submitForm,
-                child: _isSubmitting
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text(
-                        _isEditing ? 'Update' : 'Submit',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
+            if (!authProvider.isGuest)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.blue.shade700,
+                  ),
+                  onPressed: _isSubmitting ? null : _submitForm,
+                  child: _isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          _isEditing ? 'Update' : 'Submit',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
+                ),
               ),
-            ),
           ],
         ),
       ),

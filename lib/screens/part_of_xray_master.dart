@@ -175,11 +175,11 @@ class _PartofxraymasterState extends State<Partofxraymaster> {
                     'Part of X-Ray Name: ${_xrayNameData!.partOfXrayName}',
                     style: const TextStyle(fontSize: 16),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Last Updated: ${_xrayNameData!.timestamp.toDate()}',
-                    style: const TextStyle(fontSize: 16),
-                  ),
+                  // const SizedBox(height: 8),
+                  // Text(
+                  //   'Last Updated: ${_xrayNameData!.timestamp.toDate()}',
+                  //   style: const TextStyle(fontSize: 16),
+                  // ),
                 ],
               ),
             ),

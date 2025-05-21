@@ -5,8 +5,10 @@ import 'package:x_ray_entry_app/authentication/auth_provider.dart';
 import 'package:x_ray_entry_app/firebase_options.dart';
 import 'package:x_ray_entry_app/screens/cda_page.dart';
 import 'package:x_ray_entry_app/screens/display_master_page.dart';
+import 'package:x_ray_entry_app/screens/executive_name_master.dart';
 import 'package:x_ray_entry_app/screens/gateway_page.dart';
 import 'package:x_ray_entry_app/screens/login_page.dart';
+import 'package:x_ray_entry_app/screens/report_master_page.dart';
 import 'package:x_ray_entry_app/screens/update_master_page.dart';
 import 'package:x_ray_entry_app/screens/doctor_name_master.dart';
 import 'package:x_ray_entry_app/screens/gmd_master.dart';
@@ -35,6 +37,9 @@ class XRayEntryApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => AuthProvider(),
       child: MaterialApp(
+        theme: ThemeData(
+          fontFamily: 'Aptos',
+        ),
         debugShowCheckedModeBanner: false,
         title: 'X-Ray Entry App',
         home: WidgetTree(),
@@ -48,6 +53,7 @@ class XRayEntryApp extends StatelessWidget {
           '/doctorNameCreate': (context) => const DoctorNameMaster(),
           '/locationCreate': (context) => const LocationMaster(),
           '/referencePersonCreate': (context) => const ReferencePersonMaster(),
+          '/executiveNameCreate': (context) => const ExecutiveNameMaster(),
           '/xrayEntryCreate': (context) => const XrayEntrySheet(),
           // Display Routes
           '/displayMasterPage': (context) => const DisplayMasterPage(),
@@ -93,14 +99,22 @@ class XRayEntryApp extends StatelessWidget {
               isDisplayMode: args?['isDisplayMode'] ?? true,
             );
           },
-          '/xrayEntryDisplay': (context) => const XrayEntrySheet(),
+          '/executiveNameDisplay': (context) {
+            final args = ModalRoute.of(context)?.settings.arguments
+                as Map<String, dynamic>?;
+            return ExecutiveNameMaster(
+              mobileNumber: args?['value'],
+              isDisplayMode: args?['isDisplayMode'] ?? true,
+            );
+          },
           // Update Routes
           '/partOfXrayUpdate': (context) => const Partofxraymaster(),
           '/gmdUpdate': (context) => const GmdMaster(),
           '/doctorNameUpdate': (context) => const DoctorNameMaster(),
           '/locationUpdate': (context) => const LocationMaster(),
           '/referencePersonUpdate': (context) => const ReferencePersonMaster(),
-          '/xrayEntryUpdate': (context) => const XrayEntrySheet(),
+          '/executiveNameUpdate': (context) => const ExecutiveNameMaster(),
+          '/reportMasterPage': (context) => const ReportMasterPage(),
         },
       ),
     );

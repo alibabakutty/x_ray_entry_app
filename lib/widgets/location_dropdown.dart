@@ -8,12 +8,12 @@ class LocationDropdown extends StatefulWidget {
   final FormFieldValidator<String>? validator;
 
   const LocationDropdown({
-    Key? key,
+    super.key,
     required this.controller,
     this.label = 'Location',
     this.hint = 'Select Location',
     this.validator,
-  }) : super(key: key);
+  });
 
   @override
   State<LocationDropdown> createState() => _LocationDropdownState();
