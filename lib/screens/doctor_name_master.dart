@@ -226,7 +226,7 @@ class _DoctorNameMasterState extends State<DoctorNameMaster> {
               },
             ),
             const SizedBox(height: 30),
-            if (!authProvider.isGuest)
+            if (!authProvider.isExecutive)
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

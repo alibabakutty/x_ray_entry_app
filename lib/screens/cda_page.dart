@@ -8,7 +8,7 @@ class CdaPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final isGuest = authProvider.isGuest;
+    final isExecutive = authProvider.isExecutive;
     // Get the master type from the arguments
     final masterType = ModalRoute.of(context)?.settings.arguments as String?;
 
@@ -32,7 +32,7 @@ class CdaPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Create Button
-              if (!isGuest)
+              if (!isExecutive)
                 _buildActionButton(
                   context: context,
                   icon: Icons.add,
@@ -54,7 +54,7 @@ class CdaPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               // Update Button
-              if (!isGuest)
+              if (!isExecutive)
                 _buildActionButton(
                   context: context,
                   icon: Icons.edit,

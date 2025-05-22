@@ -360,7 +360,7 @@ class _GmdMasterState extends State<GmdMaster> {
           ),
           const SizedBox(height: 25),
           // Submit
-          if (!authProvider.isGuest)
+          if (!authProvider.isExecutive)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

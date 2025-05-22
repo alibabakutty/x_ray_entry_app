@@ -238,7 +238,7 @@ class _ReferencePersonMasterState extends State<ReferencePersonMaster> {
             ),
             const SizedBox(height: 30),
             // Submit Button
-            if (!authProvider.isGuest)
+            if (!authProvider.isExecutive)
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

@@ -1,17 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'auth.dart'; // Import your Auth class
+import 'package:x_ray_entry_app/authentication/auth.dart';
 
 class AuthProvider extends ChangeNotifier {
   final Auth _auth = Auth();
 
-  bool _isGuest = false;
+  bool _isExecutive = false;
   bool _isAdmin = false;
   bool _isLoggedIn = false;
   String? _username;
   String? _email;
 
-  bool get isGuest => _isGuest;
+  bool get isExecutive => _isExecutive;
   bool get isAdmin => _isAdmin;
   bool get isLoggedIn => _isLoggedIn;
   String? get username => _username;
@@ -28,7 +28,7 @@ class AuthProvider extends ChangeNotifier {
       } else {
         _isLoggedIn = false;
         _isAdmin = false;
-        _isGuest = false;
+        _isExecutive = false;
         _username = null;
         _email = null;
       }
@@ -52,7 +52,7 @@ class AuthProvider extends ChangeNotifier {
       await _auth.signIn(email: email, password: password);
       _isLoggedIn = true;
       _isAdmin = isAdmin;
-      _isGuest = !isAdmin;
+      _isExecutive = !isAdmin;
       if (currentUser != null) {
         await _loadUserData(currentUser!.uid);
       }
@@ -77,7 +77,7 @@ class AuthProvider extends ChangeNotifier {
       );
       _isLoggedIn = true;
       _isAdmin = isAdmin;
-      _isGuest = !isAdmin;
+      _isExecutive = !isAdmin;
       _username = username;
       _email = email;
       notifyListeners();
@@ -88,7 +88,7 @@ class AuthProvider extends ChangeNotifier {
 
   // Login as guest
   void loginAsGuest() {
-    _isGuest = true;
+    _isExecutive = true;
     _isAdmin = false;
     _isLoggedIn = true;
     _username = 'Guest';
@@ -98,7 +98,7 @@ class AuthProvider extends ChangeNotifier {
 
   // Login as admin
   void loginAsAdmin() {
-    _isGuest = false;
+    _isExecutive = false;
     _isAdmin = true;
     _isLoggedIn = true;
     notifyListeners();
@@ -107,7 +107,7 @@ class AuthProvider extends ChangeNotifier {
   // Logout
   Future<void> logout() async {
     await _auth.signOut();
-    _isGuest = false;
+    _isExecutive = false;
     _isAdmin = false;
     _isLoggedIn = false;
     _username = null;

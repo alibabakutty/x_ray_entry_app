@@ -239,7 +239,7 @@ class _LocationMasterState extends State<LocationMaster> {
             ),
             const SizedBox(height: 30),
             // submit button
-            if (!authProvider.isGuest)
+            if (!authProvider.isExecutive)
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
