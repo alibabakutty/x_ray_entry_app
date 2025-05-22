@@ -11,7 +11,53 @@ class WidgetTree extends StatefulWidget {
 
 class _WidgetTreeState extends State<WidgetTree> {
   @override
+  void initState() {
+    super.initState();
+    _checkAuthState();
+  }
+
+  Future<void> _checkAuthState() async {
+    // Wait for the AuthProvider to initialize
+    await Future.delayed(Duration.zero);
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    // If user is logged in, navigate to gateway page
+    if (authProvider.isLoggedIn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, '/gateway');
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+
+    // Show loading indicator while checking auth state
+    if (authProvider.isLoading) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF2193b0),
+                Color(0xFF6dd5ed),
+              ],
+            ),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // If not logged in, show the login options
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -32,15 +78,6 @@ class _WidgetTreeState extends State<WidgetTree> {
                 // Logo and App Title
                 Column(
                   children: [
-                    // ClipRRect(
-                    //   borderRadius: BorderRadius.circular(20),
-                    //   child: Image.asset(
-                    //     'assets/logo.png',
-                    //     width: 120,
-                    //     height: 120,
-                    //     fit: BoxFit.cover,
-                    //   ),
-                    // ),
                     const SizedBox(height: 20),
                     const Text(
                       'X-Ray ERP System',
@@ -76,8 +113,7 @@ class _WidgetTreeState extends State<WidgetTree> {
                         text: 'Admin Login',
                         icon: Icons.admin_panel_settings,
                         onTap: () {
-                          Provider.of<AuthProvider>(context, listen: false)
-                              .loginAsAdmin();
+                          authProvider.loginAsAdmin();
                           Navigator.pushNamed(context, '/adminLogin');
                         },
                         isPrimary: true,
@@ -119,8 +155,7 @@ class _WidgetTreeState extends State<WidgetTree> {
                         text: 'Executive Login',
                         icon: Icons.person_outline,
                         onTap: () {
-                          Provider.of<AuthProvider>(context, listen: false)
-                              .loginAsExecutive();
+                          authProvider.loginAsExecutive();
                           Navigator.pushNamed(context, '/executiveLogin');
                         },
                         isPrimary: false,

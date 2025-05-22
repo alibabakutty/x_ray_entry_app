@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:x_ray_entry_app/authentication/auth.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -12,9 +13,11 @@ class AuthProvider extends ChangeNotifier {
   String? _email;
   String? _errorMessage;
   bool _isLoading = false;
+  late SharedPreferences _prefs;
 
   AuthProvider({Auth? auth}) : _auth = auth ?? Auth() {
     _initAuthState();
+    _loadSession();
   }
 
   // Getters
@@ -34,11 +37,45 @@ class AuthProvider extends ChangeNotifier {
       if (user != null) {
         _isLoggedIn = true;
         await _loadUserData(user.uid);
+        await _saveSession();
       } else {
+        await _clearSession();
         _resetState();
       }
       notifyListeners();
     });
+  }
+
+  // Load saved session from SharedPreferences
+  Future<void> _loadSession() async {
+    _prefs = await SharedPreferences.getInstance();
+    _isLoggedIn = _prefs.getBool('isLoggedIn') ?? false;
+    _isAdmin = _prefs.getBool('isAdmin') ?? false;
+    _isExecutive = _prefs.getBool('isExecutive') ?? false;
+    _username = _prefs.getString('username');
+    _email = _prefs.getString('email');
+
+    if (_isLoggedIn) {
+      notifyListeners();
+    }
+  }
+
+  // Save current session to SharedPreferences
+  Future<void> _saveSession() async {
+    await _prefs.setBool('isLoggedIn', _isLoggedIn);
+    await _prefs.setBool('isAdmin', _isAdmin);
+    await _prefs.setBool('isExecutive', _isExecutive);
+    await _prefs.setString('username', _username ?? '');
+    await _prefs.setString('email', _email ?? '');
+  }
+
+  // Clear session data from SharedPreferences
+  Future<void> _clearSession() async {
+    await _prefs.remove('isLoggedIn');
+    await _prefs.remove('isAdmin');
+    await _prefs.remove('isExecutive');
+    await _prefs.remove('username');
+    await _prefs.remove('email');
   }
 
   // Reset all state variables
@@ -65,6 +102,8 @@ class AuthProvider extends ChangeNotifier {
       // For now using the existing flags
       _isAdmin = _isAdmin; // Preserve existing value
       _isExecutive = !_isAdmin;
+
+      await _saveSession();
     } catch (e) {
       _errorMessage = 'Failed to load user data: ${e.toString()}';
     } finally {
@@ -93,6 +132,7 @@ class AuthProvider extends ChangeNotifier {
         await _loadUserData(_currentUser!.uid);
       }
 
+      await _saveSession();
       return true;
     } on FirebaseAuthException catch (e) {
       _errorMessage = _getFirebaseErrorMessage(e);
@@ -130,6 +170,7 @@ class AuthProvider extends ChangeNotifier {
       _username = username;
       _email = email;
 
+      await _saveSession();
       return true;
     } on FirebaseAuthException catch (e) {
       _errorMessage = _getFirebaseErrorMessage(e);
@@ -149,6 +190,7 @@ class AuthProvider extends ChangeNotifier {
     _isAdmin = false;
     _isLoggedIn = true;
     _email = null;
+    await _saveSession();
     notifyListeners();
   }
 
@@ -157,6 +199,7 @@ class AuthProvider extends ChangeNotifier {
     _isExecutive = false;
     _isAdmin = true;
     _isLoggedIn = true;
+    await _saveSession();
     notifyListeners();
   }
 
@@ -167,6 +210,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
 
       await _auth.signOut();
+      await _clearSession();
       _resetState();
     } catch (e) {
       _errorMessage = 'Logout failed: ${e.toString()}';
