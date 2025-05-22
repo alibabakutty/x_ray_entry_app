@@ -81,7 +81,13 @@ class CdaPage extends StatelessWidget {
   }) {
     return ElevatedButton.icon(
       icon: Icon(icon, size: 24),
-      label: Text(label),
+      label: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
         backgroundColor: color,

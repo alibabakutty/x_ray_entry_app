@@ -15,127 +15,147 @@ class _GatewayPageState extends State<GatewayPage> {
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text('X-Ray Management System'),
-            if (authProvider.username != null)
-              Text(
-                authProvider.isExecutive
-                    ? 'Welcome, ${authProvider.username}!'
-                    : 'Welcome, ${authProvider.username}!',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-          ],
-        ),
-        centerTitle: true,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF3A015C), // Dark Velvet Purple
-                Color(0xFF3A015C), // Black with Purple Undertone
-              ],
-            ),
-          ),
-        ),
-        titleTextStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            tooltip: 'Logout',
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Logout'),
-                    content: const Text('Are you sure you want to logout?'),
-                    actions: [
-                      TextButton(
-                        child: const Text('Cancel'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      TextButton(
-                        child: const Text('Logout'),
-                        onPressed: () {
-                          final isAdmin = authProvider.isAdmin;
-                          authProvider.logout();
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pushReplacementNamed(
-                            isAdmin ? '/adminLogin' : '/executiveLogin',
-                          );
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF3A015C), // Dark Velvet Purple
-              Color(0xFF11001C), // Black with Purple Undertone
+              Color(0xFF7A3C8E),
+              Color(0xFF9C6FB3),
             ],
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
+        child: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Master Section
-              _buildSectionHeader('Master'),
-              const SizedBox(height: 10),
-              _buildNavigationButton(context, 'Part of X-Ray', '/cda',
-                  masterType: 'partOfXray'),
-              _buildNavigationButton(context, 'GMD Master', '/cda',
-                  masterType: 'gmd'),
-              _buildNavigationButton(context, 'Doctor Name', '/cda',
-                  masterType: 'doctorName'),
-              _buildNavigationButton(context, 'Location', '/cda',
-                  masterType: 'location'),
-              _buildNavigationButton(context, 'Reference Person', '/cda',
-                  masterType: 'referencePerson'),
-              // only show for admin login
-              if (authProvider.isAdmin) ...[
-                _buildNavigationButton(context, 'Executive Name', '/cda',
-                    masterType: 'executive'),
-              ],
-              const SizedBox(height: 30),
+              // Custom AppBar Header
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF7A3C8E),
+                      Color(0xFF7A3C8E),
+                    ],
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'X-Ray Management System',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (authProvider.username != null)
+                            Text(
+                              'Welcome, ${authProvider.username!}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.logout, color: Colors.white),
+                      tooltip: 'Logout',
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Logout'),
+                              content: const Text(
+                                  'Are you sure you want to logout?'),
+                              actions: [
+                                TextButton(
+                                  child: const Text('Cancel'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                                TextButton(
+                                  child: const Text('Logout'),
+                                  onPressed: () {
+                                    final isAdmin = authProvider.isAdmin;
+                                    authProvider.logout();
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pushReplacementNamed(
+                                      isAdmin
+                                          ? '/adminLogin'
+                                          : '/executiveLogin',
+                                    );
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
 
-              // Entry Section
-              _buildSectionHeader('Entry'),
-              const SizedBox(height: 10),
-              _buildNavigationButton(
-                  context, 'X-Ray Entry', '/xrayEntryCreate'),
-              const SizedBox(height: 30),
+              // Scrollable Body
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Master Section
+                      _buildSectionHeader('Master'),
+                      const SizedBox(height: 10),
+                      _buildNavigationButton(context, 'Part of X-Ray', '/cda',
+                          masterType: 'partOfXray'),
+                      _buildNavigationButton(context, 'GMD Master', '/cda',
+                          masterType: 'gmd'),
+                      _buildNavigationButton(context, 'Doctor Name', '/cda',
+                          masterType: 'doctorName'),
+                      _buildNavigationButton(context, 'Location', '/cda',
+                          masterType: 'location'),
+                      _buildNavigationButton(
+                          context, 'Reference Person', '/cda',
+                          masterType: 'referencePerson'),
+                      if (authProvider.isAdmin)
+                        _buildNavigationButton(
+                            context, 'Executive Name', '/cda',
+                            masterType: 'executive'),
 
-              // Reports Section
-              _buildSectionHeader('Reports'),
-              const SizedBox(height: 10),
-              _buildNavigationButton(
-                  context, 'Entry Reports', '/reportMasterPage'),
+                      const SizedBox(height: 30),
+
+                      // Entry Section
+                      _buildSectionHeader('Entry'),
+                      const SizedBox(height: 10),
+                      _buildNavigationButton(
+                          context, 'X-Ray Entry', '/xrayEntryCreate'),
+
+                      const SizedBox(height: 30),
+
+                      // Reports Section
+                      _buildSectionHeader('Reports'),
+                      const SizedBox(height: 10),
+                      _buildNavigationButton(
+                          context, 'Entry Reports', '/reportMasterPage'),
+
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -147,7 +167,7 @@ class _GatewayPageState extends State<GatewayPage> {
     return Text(
       title,
       style: const TextStyle(
-        fontSize: 22,
+        fontSize: 26,
         fontWeight: FontWeight.bold,
         color: Colors.white,
       ),
@@ -178,7 +198,7 @@ class _GatewayPageState extends State<GatewayPage> {
         },
         child: Text(
           label,
-          style: const TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 22),
         ),
       ),
     );
