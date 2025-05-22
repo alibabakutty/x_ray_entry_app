@@ -120,8 +120,8 @@ class _WidgetTreeState extends State<WidgetTree> {
                         icon: Icons.person_outline,
                         onTap: () {
                           Provider.of<AuthProvider>(context, listen: false)
-                              .loginAsGuest();
-                          Navigator.pushNamed(context, '/gateway');
+                              .loginAsExecutive();
+                          Navigator.pushNamed(context, '/executiveLogin');
                         },
                         isPrimary: false,
                       ),

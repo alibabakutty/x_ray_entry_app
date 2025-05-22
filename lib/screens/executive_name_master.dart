@@ -93,38 +93,75 @@ class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isSubmitting = true);
 
-      final updatedExecutiveData = ExecutiveNameData(
-        executiveName: executiveNameController.text.trim(),
-        mobileNumber: mobileNumberController.text.trim(),
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-        timestamp: _executiveNameData?.timestamp ?? Timestamp.now(),
-      );
-
-      final success = _isEditing
-          ? await firebaseService.updateExecutiveData(
-              _executiveNameData!.mobileNumber, updatedExecutiveData)
-          : await firebaseService.addExecutiveNameData(updatedExecutiveData);
-
-      setState(() => _isSubmitting = false);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success
-                ? (_isEditing ? 'Executive Updated!' : 'Executive added!')
-                : 'Operation failed. Mobile Number might be already in use.'),
-          ),
+      try {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        // first create the user account using auth
+        await authProvider.createAccount(
+          username: executiveNameController.text.trim(),
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+          isAdmin: false,
         );
 
-        if (success && _isEditing) {
-          Navigator.pop(context, true); // return to previous screen
-        } else if (success && !_isEditing) {
-          executiveNameController.clear();
-          mobileNumberController.clear();
-          emailController.clear();
-          passwordController.clear();
-          statusController.clear();
+        final updatedExecutiveData = ExecutiveNameData(
+          executiveName: executiveNameController.text.trim(),
+          mobileNumber: mobileNumberController.text.trim(),
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+          timestamp: _executiveNameData?.timestamp ?? Timestamp.now(),
+        );
+
+        final success = _isEditing
+            ? await firebaseService.updateExecutiveData(
+                _executiveNameData!.mobileNumber, updatedExecutiveData)
+            : await firebaseService.addExecutiveNameData(updatedExecutiveData);
+
+        setState(() => _isSubmitting = false);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(success
+                  ? (_isEditing ? 'Executive Updated!' : 'Executive added!')
+                  : 'Operation failed. Mobile Number might be already in use.'),
+            ),
+          );
+
+          if (success && _isEditing) {
+            Navigator.pop(context, true); // return to previous screen
+          } else if (success && !_isEditing) {
+            executiveNameController.clear();
+            mobileNumberController.clear();
+            emailController.clear();
+            passwordController.clear();
+            statusController.clear();
+          }
+        }
+      } on FirebaseException catch (e) {
+        String errorMessage = 'Registration failed';
+        switch (e.code) {
+          case 'email-already-in-use':
+            errorMessage = 'Email already in use';
+            break;
+          case 'weak-password':
+            errorMessage = 'Password is too weak';
+            break;
+          case 'invalid-email':
+            errorMessage = 'Invalid email address';
+            break;
+          default:
+            errorMessage = e.message ?? errorMessage;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred: ${e.toString()}')),
+        );
+      } finally {
+        if (mounted) {
+          setState(() => _isSubmitting = false);
         }
       }
     }

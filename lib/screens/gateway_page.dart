@@ -23,7 +23,7 @@ class _GatewayPageState extends State<GatewayPage> {
             if (authProvider.username != null)
               Text(
                 authProvider.isExecutive
-                    ? 'Guest Mode'
+                    ? 'Welcome, ${authProvider.username}!'
                     : 'Welcome, ${authProvider.username}!',
                 style: const TextStyle(
                   fontSize: 16,
@@ -72,10 +72,12 @@ class _GatewayPageState extends State<GatewayPage> {
                       TextButton(
                         child: const Text('Logout'),
                         onPressed: () {
+                          final isAdmin = authProvider.isAdmin;
                           authProvider.logout();
                           Navigator.of(context).pop();
-                          Navigator.of(context)
-                              .pushReplacementNamed('/adminLogin');
+                          Navigator.of(context).pushReplacementNamed(
+                            isAdmin ? '/adminLogin' : '/executiveLogin',
+                          );
                         },
                       ),
                     ],
@@ -115,8 +117,11 @@ class _GatewayPageState extends State<GatewayPage> {
                   masterType: 'location'),
               _buildNavigationButton(context, 'Reference Person', '/cda',
                   masterType: 'referencePerson'),
-              _buildNavigationButton(context, 'Executive Name', '/cda',
-                  masterType: 'executive'),
+              // only show for admin login
+              if (authProvider.isAdmin) ...[
+                _buildNavigationButton(context, 'Executive Name', '/cda',
+                    masterType: 'executive'),
+              ],
               const SizedBox(height: 30),
 
               // Entry Section

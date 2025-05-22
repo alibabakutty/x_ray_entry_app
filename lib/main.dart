@@ -5,6 +5,7 @@ import 'package:x_ray_entry_app/authentication/auth_provider.dart';
 import 'package:x_ray_entry_app/firebase_options.dart';
 import 'package:x_ray_entry_app/screens/cda_page.dart';
 import 'package:x_ray_entry_app/screens/display_master_page.dart';
+import 'package:x_ray_entry_app/screens/executive_login_page.dart';
 import 'package:x_ray_entry_app/screens/executive_name_master.dart';
 import 'package:x_ray_entry_app/screens/gateway_page.dart';
 import 'package:x_ray_entry_app/screens/admin_login_page.dart';
@@ -44,7 +45,8 @@ class XRayEntryApp extends StatelessWidget {
         title: 'X-Ray Entry App',
         home: WidgetTree(),
         routes: {
-          '/adminLogin': (context) => const LoginPage(),
+          '/adminLogin': (context) => const AdminLoginPage(),
+          '/executiveLogin': (context) => const ExecutiveLoginPage(),
           '/gateway': (context) => const GatewayPage(),
           '/cda': (context) => const CdaPage(),
           // Create Routes
