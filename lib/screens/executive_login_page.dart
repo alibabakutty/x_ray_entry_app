@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:x_ray_entry_app/authentication/auth.dart';
+import 'package:x_ray_entry_app/services/firebase_service.dart';
 
 class ExecutiveLoginPage extends StatefulWidget {
   const ExecutiveLoginPage({super.key});
@@ -26,6 +27,25 @@ class _ExecutiveLoginPageState extends State<ExecutiveLoginPage> {
     });
 
     try {
+      // first check the executive's status
+      final status =
+          await FirebaseService().getExecutiveStatus(_emailController.text);
+
+      if (status == 'inactive') {
+        setState(() {
+          errorMessage =
+              'Your account is inactive. Please contact admin to activate your account.';
+        });
+        return;
+      }
+
+      if (status == null) {
+        setState(() {
+          errorMessage = 'Your account is not found. Please contact admin.';
+        });
+        return;
+      }
+      // if status is active, proceed with login
       await Auth().signIn(
         email: _emailController.text,
         password: _passwordController.text,
@@ -152,6 +172,7 @@ class _ExecutiveLoginPageState extends State<ExecutiveLoginPage> {
                           style: const TextStyle(color: Colors.red),
                         ),
                       ),
+                    // Login Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(

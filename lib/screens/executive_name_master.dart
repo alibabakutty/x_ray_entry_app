@@ -30,6 +30,7 @@ class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
   bool _isSubmitting = false;
   bool _isEditing = false;
   bool _isLoading = false;
+  bool _isUpdateMode = false; // track update we're in update for view password
 
   ExecutiveNameData? _executiveNameData;
   String? executiveMobileNumberFromArgs;
@@ -44,12 +45,14 @@ class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
           executiveMobileNumberFromArgs = args;
           _isEditing =
               !widget.isDisplayMode; // only editing if not in display mode
+          _isUpdateMode = !widget.isDisplayMode;
         });
         _fetchExecutiveData(args);
       } else if (widget.mobileNumber != null) {
         setState(() {
           executiveMobileNumberFromArgs = widget.mobileNumber;
           _isEditing = !widget.isDisplayMode;
+          _isUpdateMode = !widget.isDisplayMode;
         });
         _fetchExecutiveData(widget.mobileNumber!);
       }
@@ -95,19 +98,25 @@ class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
 
       try {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        // first create the user account using auth
-        await authProvider.createAccount(
-          username: executiveNameController.text.trim(),
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
-          isAdmin: false,
-        );
+        // only create acctount if not in update mode
+        if (!_isUpdateMode) {
+          await authProvider.createAccount(
+            username: executiveNameController.text.trim(),
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+            isAdmin: false,
+          );
+        }
 
         final updatedExecutiveData = ExecutiveNameData(
           executiveName: executiveNameController.text.trim(),
           mobileNumber: mobileNumberController.text.trim(),
           email: emailController.text.trim(),
-          password: passwordController.text.trim(),
+          password: _isUpdateMode
+              ? _executiveNameData!.password // keep original password
+              : passwordController.text
+                  .trim(), // new password in create mode only
+          status: statusController.text.trim(),
           timestamp: _executiveNameData?.timestamp ?? Timestamp.now(),
         );
 
@@ -334,50 +343,73 @@ class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
               },
             ),
             const SizedBox(height: 15),
-            TextFormField(
-              controller: passwordController,
-              obscureText: _obsecureText,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                hintText: 'Enter password.',
-                suffixIcon: IconButton(
-                  icon: Icon(
-                      _obsecureText ? Icons.visibility : Icons.visibility_off),
-                  onPressed: () {
-                    setState(() {
-                      _obsecureText = !_obsecureText;
-                    });
+            Stack(
+              children: [
+                TextFormField(
+                  controller: passwordController,
+                  obscureText: _obsecureText,
+                  readOnly: _isUpdateMode, // Make read-only in edit mode
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    hintText: 'Enter password',
+                  ),
+                  validator: (value) {
+                    if (!_isUpdateMode) {
+                      // Only validate in create mode
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a password';
+                      }
+                      if (value.length < 8) {
+                        return 'Password must be at least 8 characters long';
+                      }
+                      if (!value.contains(RegExp(r'[A-Z]'))) {
+                        return 'Password must contain at least one uppercase letter';
+                      }
+                      if (!value.contains(RegExp(r'[a-z]'))) {
+                        return 'Password must contain at least one lowercase letter';
+                      }
+                      if (!value.contains(RegExp(r'[0-9]'))) {
+                        return 'Password must contain at least one digit';
+                      }
+                      if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}<>]'))) {
+                        return 'Password must contain at least one special character';
+                      }
+                    }
+                    return null;
                   },
                 ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a password';
-                }
-                if (value.length < 8) {
-                  return 'Password must be at least 8 characters long';
-                }
-                if (!value.contains(RegExp(r'[A-Z]'))) {
-                  return 'Password must contain at least one uppercase letter';
-                }
-                if (!value.contains(RegExp(r'[a-z]'))) {
-                  return 'Password must contain at least one lowercase letter';
-                }
-                if (!value.contains(RegExp(r'[0-9]'))) {
-                  return 'Password must contain at least one digit';
-                }
-                if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}<>]'))) {
-                  return 'Password must contains atleast one special character';
-                }
-                return null;
-              },
+                if (_isUpdateMode)
+                  Positioned(
+                    right: 10,
+                    top: 15,
+                    child: IconButton(
+                      icon: Icon(_obsecureText
+                          ? Icons.visibility
+                          : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() {
+                          _obsecureText = !_obsecureText;
+                        });
+                      },
+                    ),
+                  ),
+              ],
             ),
+            if (_isUpdateMode)
+              const Padding(
+                padding: EdgeInsets.only(top: 4.0),
+                child: Text(
+                  'Password cannot be changed here',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ),
             const SizedBox(height: 15),
             DropdownButtonFormField<String>(
-              value:
-                  statusController.text.isEmpty ? null : statusController.text,
+              value: statusController.text.isEmpty
+                  ? 'active'
+                  : statusController.text,
               decoration: InputDecoration(
                 labelText: 'Status',
                 border: OutlineInputBorder(
@@ -397,7 +429,7 @@ class _ExecutiveNameMasterState extends State<ExecutiveNameMaster> {
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a status';
+                  return 'Please select a status';
                 }
                 return null;
               },

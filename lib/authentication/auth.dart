@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -48,5 +50,73 @@ class Auth {
 
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
+  }
+
+  // Re-authentication (these are extras)
+  Future<void> reauthenticateWithCredential(
+      {required String email, required String password}) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No user is currently signed in');
+
+    // create auth credential
+    final credential = EmailAuthProvider.credential(
+      email: email,
+      password: password,
+    );
+    // Reauthenticate
+    await user.reauthenticateWithCredential(credential);
+  }
+
+  Future<void> updatePassword(
+      {required String currentPassword, required String newPassword}) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No user is currently signed in');
+
+    // first reauthenticate
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+    // update password
+    await user.updatePassword(newPassword);
+  }
+
+  Future<bool> checkEmailVerified() async {
+    await _firebaseAuth.currentUser?.reload();
+    return _firebaseAuth.currentUser?.emailVerified ?? false;
+  }
+
+  // modify the updateemail method to be more robust
+  Future<void> updateEmail(
+      {required String currentPassword, required String newEmail}) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No user is currently signed in');
+    // first reauthenticate
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+    // verify before update email
+    await user.verifyBeforeUpdateEmail(newEmail);
+    // Note: Don't update Firestore yet - wait for email verification
+    // The email will only be updated after the user clicks the verification link
+    // You should listen for auth state changes to detect when the email is actually updated
+  }
+
+  Future<void> deleteAccount({required String currentPassword}) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No user is currently signed in');
+    // first reauthenticate
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+    // delete account
+    await _firestore.collection('users').doc(user.uid).delete();
+    // then delete auth accounts
+    await user.delete();
   }
 }

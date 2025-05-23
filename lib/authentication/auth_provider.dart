@@ -243,4 +243,119 @@ class AuthProvider extends ChangeNotifier {
         return 'Authentication error: ${e.message}';
     }
   }
+
+  Future<bool> reauthenticate(
+      {required String email, required String password}) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      await _auth.reauthenticateWithCredential(
+        email: email,
+        password: password,
+      );
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _getFirebaseErrorMessage(e);
+      return false;
+    } catch (e) {
+      _errorMessage = 'Re-authentication failed: ${e.toString()}';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updatepassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      await _auth.updatePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _getFirebaseErrorMessage(e);
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> checkEmailVerified() async {
+    try {
+      return await _auth.checkEmailVerified();
+    } catch (e) {
+      _errorMessage = 'Email verification failed: ${e.toString()}';
+      return false;
+    }
+  }
+
+  // modify the updateemail method
+  Future<bool> updateEmail({
+    required String currentPassword,
+    required String newEmail,
+  }) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      await _auth.updateEmail(
+        currentPassword: currentPassword,
+        newEmail: newEmail,
+      );
+
+      // Don't update local state yet - wait for verification
+      // just notify user to check their email
+      _errorMessage =
+          'Verification email sent to $newEmail. Please verify to complete the update.';
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _getFirebaseErrorMessage(e);
+      return false;
+    } catch (e) {
+      _errorMessage = 'Email update failed: ${e.toString()}';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> deleteAccount({
+    required String currentPassword,
+  }) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      await _auth.deleteAccount(currentPassword: currentPassword);
+
+      // clear local state
+      await _clearSession();
+      _resetState();
+
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _getFirebaseErrorMessage(e);
+      return false;
+    } catch (e) {
+      _errorMessage = 'Account deletion failed: ${e.toString()}';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

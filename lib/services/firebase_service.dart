@@ -446,6 +446,22 @@ class FirebaseService {
     return null;
   }
 
+  Future<String?> getExecutiveStatus(String email) async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('executive_name_data')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first.get('status') as String?;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   // fetch all executive names
   Future<List<ExecutiveNameData>> getAllExecutiveNames() async {
     try {
