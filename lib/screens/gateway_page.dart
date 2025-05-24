@@ -142,7 +142,13 @@ class _GatewayPageState extends State<GatewayPage> {
                       const SizedBox(height: 10),
                       _buildNavigationButton(
                           context, 'X-Ray Entry', '/xrayEntryCreate'),
+                      const SizedBox(height: 30),
 
+                      // Import Section
+                      _buildSectionHeader('Import'),
+                      const SizedBox(height: 10),
+                      _buildNavigationButton(
+                          context, 'Import Data', '/importDataPage'),
                       const SizedBox(height: 30),
 
                       // Reports Section
