@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:x_ray_entry_app/authentication/auth_provider.dart';
 import 'package:x_ray_entry_app/firebase_options.dart';
 import 'package:x_ray_entry_app/widget_tree.dart';
-import 'package:x_ray_entry_app/widgets/routes.dart';
+import 'package:x_ray_entry_app/utils/routes.dart';
 
 void main() async {
   // Ensure that plugin services are initialized so that Firebase can use them

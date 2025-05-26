@@ -6,7 +6,7 @@ import 'package:x_ray_entry_app/modals/xray_entry_sheet_data.dart';
 import 'package:x_ray_entry_app/services/firebase_service.dart';
 import 'package:x_ray_entry_app/widgets/doctor_name_dropdown.dart';
 import 'package:x_ray_entry_app/widgets/gmd_number_dropdown.dart';
-import 'package:x_ray_entry_app/widgets/input_field.dart';
+import 'package:x_ray_entry_app/utils/input_field.dart';
 import 'package:x_ray_entry_app/widgets/location_dropdown.dart';
 import 'package:x_ray_entry_app/widgets/part_of_xray_dropdown.dart';
 import 'package:x_ray_entry_app/widgets/reference_person_dropdown.dart';
